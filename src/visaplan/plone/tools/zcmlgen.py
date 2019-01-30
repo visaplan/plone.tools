@@ -3,17 +3,25 @@
 ZCML-Generierung für Plone-Ressourcen
 
 Verwendung:
-    from Products.unitracc.tools.zcmlgen import TemplateGenerator
+    from visaplan.plone.tools.zcmlgen import TemplateGenerator
     TemplateGenerator(__file__).write()
 
 TO DO:
-- Aufrufender Dateiname kann ggf. dem Traceback entnommen werden
+- Bislang haben wir spezialisierte Generatoren, die nur jeweils eine Sorte von
+  Einträgen erzeugen.
+  Wünschenswert wäre:
+  - eine Generierung aller unterstützten Typen durch einen allgemeinen
+    Generator
+  - eine Gruppierung nach Typen
 """
 
 # Standardmodule
 from os.path import join, isdir, isfile, split, abspath, normcase, sep
 from os import listdir
 from difflib import Differ
+
+import sys
+from pdb import set_trace
 
 # Zope/Plone
 try:
@@ -141,11 +149,6 @@ class BasicGenerator(object):
                 raise MissingFileError(filename=fn)
         with open(fn, 'w') as fp:
             fp.write(txt)
-            return
-            print '-*'*38+'-'
-            print '%(self)r:' % locals()
-            print fn, 'geschrieben!'
-            print '-*'*38+'-'
 
     def diff(self, old, new):
         """
@@ -157,15 +160,23 @@ class BasicGenerator(object):
         def skipempty(s):
             return not s.rstrip()
         differ = Differ(linejunk=skipempty)
-        oldl = [line
+        oldl = [line.strip()
                 for line in old.splitlines()
                 ]
-        newl = [line
+        newl = [line.strip()
                 for line in new.splitlines()
                 ]
-        changes = differ.compare(oldl, newl)
-        if changes:
-            print ''.join(changes)
+        # a Generator object is "True", even if yielding an empty list ...
+        difflines = list(differ.compare(oldl, newl))
+        # Differ creates a human-readable difference; lines prefixed by '  '
+        # are common to both
+        if [difference
+            for difference in difflines
+            if not difference.startswith('  ')
+            ]:
+            print('\n'.join(difflines))
+            if sys.stdout.isatty():
+                set_trace()
             return False
         return True
 
@@ -192,7 +203,7 @@ class ResourceGenerator(BasicGenerator):
 class SubpackageGenerator(BasicGenerator):
     """
     implementiert die fehlenden Methoden der BasicGenerator-Klasse
-    für statische Ressourcen
+    für Unterpakete
     """
 
     def generate_dicts(self):
@@ -340,7 +351,7 @@ def changeable_path(fullpath, devmode=None):
     False
 
     In Eggs wird generell nichts geändert:
-    >>> changeable_path('.../eggs/visaplan.cool.tooa-1.0-py2.7.egg/src/.../configure.zcml')
+    >>> changeable_path('.../eggs/visaplan.cool.tool-1.0-py2.7.egg/src/.../configure.zcml')
     False
     """
     splitpath = normcase(abspath(fullpath).split(sep))

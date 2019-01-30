@@ -2,6 +2,27 @@ Changelog
 =========
 
 
+1.1.3 (2019-01-29)
+------------------
+
+- ``setup.make_renamer()``: generated ``rename`` function improved:
+  existing positional options default to ``None``; instead of ``uid``,
+  ``o`` (object) or ``brain`` can be specified (by name).
+
+- ``setup.make_query_extractor()``, generated ``extract_query`` function improved:
+  don't convert a ``Language`` string to a list if it's value is ``all``
+
+- ``zcmlgen`` module:
+
+  - Bugfix for changes detection
+
+  - If changes are found but disallowed (non-development setup),
+    and if sys.stdout is connected to a terminal,
+    start the debugger
+
+  [tobiasherp]
+
+
 1.1.2 (2018-11-21)
 ------------------
 
@@ -17,8 +38,11 @@ Changelog
 - ``zcmlgen`` module added:
 
   - Generates ``configure.zcml`` files, if
-    - changes are detected, and
+
+    - changes are detected (*buggy*; see v1.1.3), and
+
     - development mode is active, and
+
     - the source is in a development package.
 
 
