@@ -1,23 +1,27 @@
 Changelog
 =========
 
-1.1.dev4 (unreleased)
----------------------
+1.1.1 (2018-09-27)
+------------------
 
-- ``brains`` module added:
+- ``zcmlgen`` module added:
 
-  - ``make_collector``, e.g. for address fields
+  - Generates ``configure.zcml`` files, if
+    - changes are detected, and
+    - development mode is active, and
+    - the source is in a development package.
 
-- ``context`` module:
 
-  - new function ``decorated_tool``
-
-1.1.dev3 (unreleased)
----------------------
+1.1 (2018-09-17)
+----------------
 
 - ``attools`` module added:
 
   - a brown bag of tools for Archetypes
+
+- ``brains`` module added:
+
+  - ``make_collector``, e.g. for address fields
 
 - ``forms`` module added:
 
@@ -37,18 +41,21 @@ Changelog
 
   - tools for creation of catalog queries
 
-- ``functions`` module:
-
-  - new function ``looksLikeAUID`` (for historical reasons)
-
-1.1.dev1 (unreleased)
----------------------
-
 - ``setup`` module added: functions for use in migration scripts
 
+- Module changes:
 
-1.0.dev1 (unreleased)
----------------------
+  - ``context`` module:
+
+    - new function ``decorated_tool``
+
+  - ``functions`` module:
+
+    - new function ``looksLikeAUID`` (for historical reasons)
+
+
+1.0 (2018-07-11)
+----------------
 
 - Initial release.
   [tobiasherp]

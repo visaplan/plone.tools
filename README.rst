@@ -33,7 +33,7 @@ This add-on can be seen in action at the following sites:
 - https://www.unitracc.de
 - https://www.unitracc.com
 
-Modules in version 1.1:
+Modules in version 1.1.1:
 
 - ``attools`` module
 
@@ -82,6 +82,13 @@ Modules in version 1.1:
 - ``setup`` module (since v1.1)
 
   Functions for use in migration scripts
+
+- ``zcmlgen`` module (since v1.1.1)
+
+  - Generates ``configure.zcml`` files, if
+    - changes are detected, and
+    - development mode is active, and
+    - the source is in an development package.
 
 
 Documentation
