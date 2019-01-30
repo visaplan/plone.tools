@@ -94,16 +94,7 @@ Modules in version 1.1.1:
 Documentation
 -------------
 
-The modules are documented by doctests.
-Full documentation for end users can be found in the "docs" folder.
-
-
-Translations
-------------
-
-This product has been translated into
-
-- Klingon (thanks, K'Plai)
+Sorry, we don't have real user documentation yet.
 
 
 Installation

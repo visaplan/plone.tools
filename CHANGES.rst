@@ -1,6 +1,16 @@
 Changelog
 =========
 
+
+1.1.2 (2018-11-21)
+------------------
+
+- Corrections for the documentation
+
+- (currently) unused dependencies removed
+  [tobiasherp]
+
+
 1.1.1 (2018-09-27)
 ------------------
 
