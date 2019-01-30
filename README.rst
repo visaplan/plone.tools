@@ -8,19 +8,15 @@ visaplan.plone.tools
 
 General tools modules for Plone.
 
-We don't claim ultimate Plone wisdom (yet); the main purpose of this package is
+We don't claim ultimate Plone wisdom (yet); the reason for the creation of
+this package was
 to factor out functionality from a big monolithic product into packages.
-
-Thus, the purpose of this package (for now) is *not* to provide new functionality;
-it is more likely to loose functionality during further development
-(as parts of it will be forked out into their own packages,
-or some functionality may even become obsolete because there are better
-alternatives in standard Plone components).
 
 It is part of the footing of the "Unitracc family" of Plone sites
 which are maintained by visaplan GmbH, Bochum, Germany.
 
-Some modules of this package still contain some resources (e.g. type names)
+Some modules of this package might still contain some resources
+(e.g. type names)
 which are specific to our "Unitracc family" of sites;
 this is likely to change in future releases.
 
@@ -33,7 +29,7 @@ This add-on can be seen in action at the following sites:
 - https://www.unitracc.de
 - https://www.unitracc.com
 
-Modules in version 1.1.1:
+Modules in version 1.1.1+:
 
 - ``attools`` module
 
@@ -86,8 +82,11 @@ Modules in version 1.1.1:
 - ``zcmlgen`` module (since v1.1.1)
 
   - Generates ``configure.zcml`` files, if
+
     - changes are detected, and
+
     - development mode is active, and
+
     - the source is in an development package.
 
 
