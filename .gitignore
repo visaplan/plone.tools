@@ -102,3 +102,9 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Subversion
+.svn
+
+# visaplan project tools/setup
+update-module

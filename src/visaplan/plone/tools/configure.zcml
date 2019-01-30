@@ -1,0 +1,10 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope">
+    <!-- [ Modules of this Product ... [ -->
+    <include package=".cfg" />
+    <include package=".context" />
+    <include package=".functions" />
+    <include package=".log" />
+    <include package=".setup" />
+    <!-- ] ... Modules of this Product ] -->
+</configure>
