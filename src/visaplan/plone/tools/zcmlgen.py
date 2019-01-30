@@ -172,7 +172,8 @@ class BasicGenerator(object):
         # are common to both
         if [difference
             for difference in difflines
-            if not difference.startswith('  ')
+            if not difference.startswith('  ')  # unchanged lines
+            and difference not in ('+ ', '- ')  # empty lines added/removed
             ]:
             print('\n'.join(difflines))
             if sys.stdout.isatty():

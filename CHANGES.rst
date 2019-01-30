@@ -2,6 +2,16 @@ Changelog
 =========
 
 
+1.1.4 (unreleased)
+------------------
+
+- ``zcmlgen`` module:
+
+  - changes detection improved to explicitly ignore added/removed blank lines
+
+  [tobiasherp]
+
+
 1.1.3 (2019-01-29)
 ------------------
 
@@ -17,7 +27,7 @@ Changelog
   - Bugfix for changes detection
 
   - If changes are found but disallowed (non-development setup),
-    and if sys.stdout is connected to a terminal,
+    and if ``sys.stdout`` is connected to a terminal,
     start the debugger
 
   [tobiasherp]
