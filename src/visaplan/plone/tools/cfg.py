@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- vim: ts=8 sts=4 sw=4 si et tw=79
 """
-unitracc.tools.cfg: Zugriff auf "Produkt"konfiguration ...
+visaplan.plone.tools.cfg: Zugriff auf "Produkt"konfiguration ...
 
 ... in buildout-Skript:
 
@@ -18,6 +18,17 @@ ACHTUNG - Der Defaultwert für get_debug_active muß ein String sein; z. B.:
     from Products.unitracc.tools.cfg import get_debug_active
     debug_active = get_debug_active('tree', str(DevelopmentMode))
 
+Siehe auch:
+
+- visaplan.tools.dicts.getOption
+
+sowie die als Factory (zur Konversion der Strings zu den benötigten Datentypen)
+vorgesehenen Funktionen
+
+- visaplan.tools.minifuncs.makeBool
+- visaplan.tools.minifuncs.NoneOrInt
+- ...
+- visaplan.tools.lands0.makeListOfStrings
 """
 
 __all__ = ['get_debug_active',
@@ -41,6 +52,8 @@ except ImportError:
     if __name__ != '__main__':
         raise
 
+# Unitracc-Tools:
+from visaplan.tools.minifuncs import makeBool, NoneOrString
 
 def get_debug_active(product, default=None):
     """
@@ -64,7 +77,7 @@ def get_raw_config(product=None, defaults={}, fn=None):
     Schlüssel, die in der Konfiguration fehlen,
     werden ggf. dem defaults-dict entnommen.
 
-    Siehe auch .misc.getOption
+    Siehe auch visaplan.tools.dicts.getOption
     """
     if fn is not None:
         if product is not None:
@@ -103,7 +116,7 @@ def get_config(**kwargs):
 
     Alle Schlüssel sollten mindestens in einem der Argumente <factories> oder
     <defaults> explizit sein; im jeweils anderen können sie über den
-    defaultdict-Mechanismus kommen. 
+    defaultdict-Mechanismus kommen.
     """
     if 'fn' in kwargs:
         assert 'product' not in kwargs, (
@@ -129,7 +142,7 @@ def get_config(**kwargs):
             dic[key] = factories[key](val)
     fact_keys.difference_update(done_keys)
     for key in fact_keys:
-        # klappt, wenn defaults ein defaultdict ist: 
+        # klappt, wenn defaults ein defaultdict ist:
         dic[key] = factories[key](dic[key])
     return dict(dic)
 

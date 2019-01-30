@@ -22,6 +22,7 @@ from visaplan.tools.classes import Proxy, GetterDict, CheckedSetterDict, DictOfS
 from visaplan.kitchen.spoons import generate_uids
 from visaplan.tools.debug import pp
 from visaplan.tools.minifuncs import gimme_False
+from visaplan.tools.sequences import unique_union
 
 # Logging und Debugging:
 import logging
@@ -47,7 +48,7 @@ __all__ = ['switch_menu_item',  # Menüeintrag (de)aktivieren
            # sonstige Hilsfunktionen:
            'make_watcher_function',  # --> Signatur f(brain, string)
            # für Suche:
-           'getAllLanguages', 
+           'getAllLanguages',
            # Dekorator:
            'step',
            # noch unfertig: 
@@ -314,7 +315,7 @@ def make_query_extractor(context, do_pop=True):
             val = pop('getExcludeFromSearch')
             if val is not None:
                 query['getExcludeFromSearch'] = int(val)
-        # optionale Argumente ohne Vorgabewert: 
+        # optionale Argumente ohne Vorgabewert:
         for name in [
             'portal_type',
             'getCustomSearch',
@@ -325,7 +326,7 @@ def make_query_extractor(context, do_pop=True):
                 if isinstance(val, basestring):
                     val = [val]
                 query[name] = val
-        # Vorgabe: alle aktiven Sprachen 
+        # Vorgabe: alle aktiven Sprachen
         Language = pop('Language', None)
         if Language is None:
             Language = getAllLanguages(context)
@@ -462,7 +463,7 @@ def make_attribute_setter(logger, setters=None, dryrun=0):
     setters_map = CheckedSetterDict()
     getters_map = GetterDict()
     if setters is not None:
-        # spezielle zu verwendende Werte: 
+        # spezielle zu verwendende Werte:
         setters_map.update(setters)
     stem = '%(o)r: '
 
@@ -501,7 +502,7 @@ def make_attribute_setter(logger, setters=None, dryrun=0):
         else:
             logger.info(stem + 'deleting %(key)r%(setter_info)s, was %(old)r', locals())
         # dryrun heißt nur: keine Zuweisung; aber ob der Setter existiert,
-        # wollen wir durchaus wissen! 
+        # wollen wir durchaus wissen!
         if setter_name is not None:
             a = getattr(o, setter_name)
         if dryrun:
@@ -688,7 +689,7 @@ def make_uid_setter(**kwargs):
 
     find_one = make_distinct_finder(catalog=catalog, logger=logger)
 
-    # Vorgabewerte: 
+    # Vorgabewerte:
     optional = kwargs.pop('optional', False)
     shortcircuit = kwargs.pop('shortcircuit', False)
     if kwargs:
@@ -1227,7 +1228,7 @@ for from_state, to_state, tr in (
     # für Vortragsseiten, die in Demo-Kursen benötigt werden:
     ('inherit',    'visible',    'make_visible'),
     ('inherit',    'published',  'make_public'),
-    # nichts zu tun, aber kein Fehler: 
+    # nichts zu tun, aber kein Fehler:
     ('restricted', 'restricted', None),
     ('visible',    'visible',    None),
     ('published',  'published',  None),
@@ -1546,7 +1547,7 @@ def make_transition_applicator(**kwargs):  # ---- [ m._t._a. ... [ -[[
             if watched_case(uid, target_state):
                 set_trace()
             if target_state in target_values:
-                # Zielstatus wurde übergeben; dem korrekten Set hinzufügen: 
+                # Zielstatus wurde übergeben; dem korrekten Set hinzufügen:
                 target_sets[target_state].add(uid)
 
         # ----------------------- [ Zielstatus bekannt ... [
@@ -1590,7 +1591,7 @@ def make_transition_applicator(**kwargs):  # ---- [ m._t._a. ... [ -[[
                                     locals())
                 transition = None
                 if doit:
-                    # nun die Transition ermitteln: 
+                    # nun die Transition ermitteln:
                     try:
                         transition = TRANSITIONS_MAP[(current_state, target_state)]
                     except KeyError:

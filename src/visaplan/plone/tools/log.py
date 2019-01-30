@@ -18,7 +18,7 @@ from pprint import pformat
 from Globals import DevelopmentMode
 
 # Unitracc-Tools:
-from .cfg import get_debug_active, split_filename
+from visaplan.plone.tools.cfg import get_debug_active, split_filename
 from visaplan.tools.coding import safe_decode, safe_encode
 from visaplan.tools.debug import arginfo, pretty_funcname
 

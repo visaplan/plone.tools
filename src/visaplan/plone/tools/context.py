@@ -6,12 +6,18 @@ Funktionen, die im Rahmen eines Aufruf-Kontexts hilfreich sind
 (also nicht über den aktuellen Request hinaus)
 """
 
+# Standardmodule:
+from traceback import extract_stack
+import logging
+
 # Plone:
 from Products.CMFCore.utils import getToolByName
 
 # Unitracc-Tools:
-from .log import getLogSupport
+from visaplan.plone.tools.log import getLogSupport
 from visaplan.tools.minifuncs import gimme_False
+from visaplan.tools.debug import log_or_trace
+from visaplan.tools.debug import asciibox
 
 
 __author__ = "Tobias Herp <tobias.herp@visaplan.com>"
@@ -90,7 +96,7 @@ def make_SessionDataProxy(context):
     Stellt die Sitzung als Dict. zur Verfügung;
     für fehlende Schlüssel wird None zurückgegeben.
     """
-    
+
     session = context.REQUEST.SESSION
 
     class SDProxy(dict):
@@ -231,4 +237,47 @@ def make_userdetector(ids, splitter=None, getid=True, verbose=None):
         return get_watched_userid
     else:
         return user_is_one_of
-        
+
+
+def decorated_tool(context, toolname, limit_get_delta=0, limit=3):
+    """
+    Gib eine "dekorierte" Fassung des übergebenen Tools zurück
+
+    Argumente:
+
+    -- context, toolname -- weitergereicht an getToolByName
+    -- limit_get_delta -- eine Ganzzahl, die das limit-Argument für
+                    extract_stack für die *Beschaffung* des Tools gegenüber
+                    seiner *Verwendung* erhöht.
+                    Bei Aufruf durch einen Adapter ist 1 zu übergeben.
+    -- limit -- weitergereicht an extract_stack
+    """
+    logger = logging.getLogger('decorated_tool %(toolname)r' % locals())
+    def caller_info(limit=limit):
+        raw_info = extract_stack(limit=limit)
+        filename, lineno, funcname = raw_info[0][:3]
+        if filename.endswith('.pyc'):
+            filename = filename[:-1]
+        if funcname:
+            prefix = '%(filename)s[%(funcname)s]: %(lineno)d'
+        else:
+            prefix = '%(filename)s: %(lineno)d'
+        return prefix % locals()
+
+    ci = caller_info(limit+limit_get_delta)
+    logger.info('GET:  ' + ci)
+    print '*** ' + ci
+    print '*** getting tool %(toolname)r' % locals()
+
+    tool = getToolByName(context, toolname)
+    def decorated(*args, **kwargs):
+        ci = caller_info()
+        logger.info('CALL: ' + ci)
+        print '***' + ci + ':'
+        print asciibox((toolname+'(',) + args, kwargs=kwargs)
+        res = tool(*args, **kwargs)
+        print '...' + ci + '.'
+        return res
+
+    decorated.__doc__ = '%(toolname)s tool (decorated)' % locals()
+    return decorated

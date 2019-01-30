@@ -1,4 +1,4 @@
-visaplan.PACKAGE Copyright 2018, Tobias Herp
+visaplan.PACKAGE Copyright 2018, visaplan GmbH, Germany
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License version 2

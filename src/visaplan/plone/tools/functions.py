@@ -10,6 +10,9 @@ VERSION = (1,
 __version__ = '.'.join(map(str, VERSION))
 __all__ = ['is_uid_shaped',
            'id_of',
+           # ---------------- [ aus Products.unitracc.tools.misc ... [
+           'looksLikeAUID',  # weniger empfohlen ...
+           # ---------------- ] ... aus Products.unitracc.tools.misc ]
            ]
 
 # Standardmodule
@@ -17,7 +20,7 @@ from os.path import (
         splitext, split,
         )
 
-UID_CHARS = frozenset(u'0123456789abcdef')
+UIDCHARS_UNICODE = frozenset(u'0123456789abcdef')
 def is_uid_shaped(s, onerror='raise'):
     """
     Sieht der übergebene String aus wie eine UID?
@@ -29,6 +32,8 @@ def is_uid_shaped(s, onerror='raise'):
     >>> is_uid_shaped('0123456789ABCDEF0123456789ABCDEF')
     False
 
+    Verwendet z. B. zum Erzeugen des 'uid'-Werts von
+    visaplan.plone.tools.forms.uid_or_number
     """
     if isinstance(s, str):
         try:
@@ -42,7 +47,46 @@ def is_uid_shaped(s, onerror='raise'):
                          % locals())
     else:
         return False
-    return len(s) == 32 and UID_CHARS.issuperset(s)
+    return len(s) == 32 and UIDCHARS_UNICODE.issuperset(s)
+
+
+# --------------------------- [ aus Products.unitracc.tools.misc ... [
+UIDCHARS_BYTES = set('abcdef0123456789')
+def looksLikeAUID(uid):
+    """
+    Sieht der übergebene String wie eine UID aus?
+
+    >>> looksLikeAUID('abcdabcdabcdabcdabcdabcdabcdabcd')
+    True
+    >>> looksLikeAUID('abcdabcdabcdabcdabcdabcdabcdabc')
+    False
+    >>> looksLikeAUID(u'abcdabcdabcdabcdabcdabcdabcdabcd')
+    True
+    >>> looksLikeAUID(u'ä')
+    False
+    >>> looksLikeAUID('ABCDABCDABCDABCDABCDABCDABCDABCD')
+    False
+    >>> looksLikeAUID(42)
+    False
+
+    Die vorliegende Funktion "fällt auf Listen herein":
+    >>> sillyuid = list('abcd'*8)
+    >>> sillyuid[:8]
+    ['a', 'b', 'c', 'd', 'a', 'b', 'c', 'd']
+    >>> looksLikeAUID(sillyuid)
+    True
+
+    Sie wird hier daher vorwiegend aus historischen Gründen erhalten;
+    die Umstellung auf is_uid_shaped (siehe oben) wird empfohlen.
+    """
+    try:
+        if len(uid) != 32:
+            return False
+    except TypeError:
+        return False
+    else:
+        return set(uid).issubset(UIDCHARS_BYTES)
+# --------------------------- ] ... aus Products.unitracc.tools.misc ]
 
 
 def id_of(name):

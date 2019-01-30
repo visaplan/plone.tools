@@ -11,10 +11,22 @@ General tools modules for Plone.
 We don't claim ultimate Plone wisdom (yet); the main purpose of this package is
 to factor out functionality from a big monolithic product into packages.
 
+Thus, the purpose of this package (for now) is *not* to provide new functionality;
+it is more likely to loose functionality during further development
+(as parts of it will be forked out into their own packages,
+or some functionality may even become obsolete because there are better
+alternatives in standard Plone components).
+
+
 Features
 --------
 
-Modules in version 1.0:
+This add-on can be seen in action at the following sites:
+
+- https://www.unitracc.de
+- https://www.unitracc.com
+
+Modules in version 1.1:
 
 - ``cfg`` module
 
@@ -25,6 +37,10 @@ Modules in version 1.0:
   Several tools for processing the request.
   Some need some modernization ...
 
+- ``forms`` module
+
+  Several tools for forms
+
 - ``functions`` module
 
   Some functions, e.g. ``is_uid_shaped``
@@ -32,6 +48,12 @@ Modules in version 1.0:
 - ``log`` module
 
   Automatically named loggers
+
+- ``mock`` module
+
+  - a few small classes for use in doctests
+
+  - the same module as ``visaplan.tools.mock``
 
 - ``setup`` module (since v1.1)
 
@@ -88,4 +110,6 @@ please use the issue tracker mentioned above.
 License
 -------
 
-The project is licensed under the Apache Software License.
+The project is licensed under the GPLv2.
+
+.. vim: tw=79 cc=+1 sw=4 sts=4 si et
