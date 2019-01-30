@@ -17,6 +17,13 @@ it is more likely to loose functionality during further development
 or some functionality may even become obsolete because there are better
 alternatives in standard Plone components).
 
+It is part of the footing of the "Unitracc family" of Plone sites
+which are maintained by visaplan GmbH, Bochum, Germany.
+
+Some modules of this package still contain some resources (e.g. type names)
+which are specific to our "Unitracc family" of sites;
+this is likely to change in future releases.
+
 
 Features
 --------
@@ -27,6 +34,14 @@ This add-on can be seen in action at the following sites:
 - https://www.unitracc.com
 
 Modules in version 1.1:
+
+- ``attools`` module
+
+  several tools for Archetypes-based content
+
+- ``brains`` module
+
+  currently one ``make_collector`` function, e.g. for address fields
 
 - ``cfg`` module
 
@@ -54,6 +69,15 @@ Modules in version 1.1:
   - a few small classes for use in doctests
 
   - the same module as ``visaplan.tools.mock``
+
+- ``mock_cfg`` module
+
+  A rudimentary mock module for ``cfg``
+
+- ``search`` module
+
+  A few functions to support creation of ZODB catalog search queries
+  (quite proprietary, I'm afraid; might go away in future versions)
 
 - ``setup`` module (since v1.1)
 

@@ -6,7 +6,7 @@ from setuptools import setup
 
 package_name = 'visaplan.plone.tools'
 VERSION = (open('VERSION').read().strip()
-           + '.dev4'  # in branches only
+           # + '.dev4'  # in branches only
            )
 
 # ------------------------------------------- [ for setup_kwargs ... [
