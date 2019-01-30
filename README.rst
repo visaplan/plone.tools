@@ -117,8 +117,8 @@ and then running ``bin/buildout``
 Contribute
 ----------
 
-- Issue Tracker: https://github.com/visaplan/visaplan.plone.tools/issues
-- Source Code: https://github.com/visaplan/visaplan.plone.tools
+- Issue Tracker: https://github.com/visaplan/plone.tools/issues
+- Source Code: https://github.com/visaplan/plone.tools
 
 
 Support
