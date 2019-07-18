@@ -2,14 +2,61 @@ Changelog
 =========
 
 
-1.1.4 (unreleased)
+1.2 (unreleased)
+----------------
+
+- Breaking changes:
+
+  - ``forms.tryagain_url``:
+
+    - all options (which are all arguments except the request) will need to be given by name
+      (which is possible and recommended already).
+
+
+1.1.5 (2019-07-18)
 ------------------
+
+Bugfixes:
+
+- `getConfiguration` might fail; in such cases, log a warning and use the default
+- Missing requirements:
+
+  - ``visaplan.kitchen``
+
+[tobiasherp]
+
+
+1.1.4 (2019-05-09)
+------------------
+
+- ``indexes`` module added:
+
+  - Function ``getSortableTitle`` for title conversion.
+
+    This converts umlauts etc. to sort them
+    as equal to their corresponding base vocals,
+    according to German lexical usage.
+
+- ``attools`` module:
+
+  - New function ``notifyedit(context)``
+
+- ``forms`` module:
+
+  - ``tryagain_url`` function supports ``var_items`` argument
+
+  - bugfix for ``make_input`` function (suppression of ``type`` attribute)
 
 - ``zcmlgen`` module:
 
   - changes detection improved to explicitly ignore added/removed blank lines
 
-  [tobiasherp]
+- ``context`` module:
+
+  - new functions ``message`` and ``getbrain``,
+    as replacement for some adapters named alike
+
+[tobiasherp]
 
 
 1.1.3 (2019-01-29)

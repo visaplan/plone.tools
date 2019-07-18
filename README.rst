@@ -8,9 +8,9 @@ visaplan.plone.tools
 
 General tools modules for Plone.
 
-We don't claim ultimate Plone wisdom (yet); the reason for the creation of
-this package was
-to factor out functionality from a big monolithic product into packages.
+We don't claim ultimate Plone wisdom (yet);
+this package is one of the parts a big monolithic classic Zope product
+was s´plit into.
 
 It is part of the footing of the "Unitracc family" of Plone sites
 which are maintained by visaplan GmbH, Bochum, Germany.
@@ -29,7 +29,7 @@ This add-on can be seen in action at the following sites:
 - https://www.unitracc.de
 - https://www.unitracc.com
 
-Modules in version 1.1.1+:
+Modules in version 1.1.4+:
 
 - ``attools`` module
 
@@ -55,6 +55,14 @@ Modules in version 1.1.1+:
 - ``functions`` module
 
   Some functions, e.g. ``is_uid_shaped``
+
+- ``indexes`` module (new in v1.1.4) 
+
+  - Function ``getSortableTitle`` for title conversion.
+
+    This converts umlauts etc. to sort them
+    as equal to their corresponding base vocals,
+    according to German lexical usage.
 
 - ``log`` module
 
@@ -95,6 +103,9 @@ Documentation
 
 Sorry, we don't have real user documentation yet.
 
+Most functions are documented by doctests, anyway;
+it helps to understand some German.
+
 
 Installation
 ------------
@@ -125,12 +136,14 @@ Support
 -------
 
 If you are having issues, please let us know;
-please use the issue tracker mentioned above.
+please use the `issue tracker`_ mentioned above.
 
 
 License
 -------
 
 The project is licensed under the GPLv2.
+
+.. _`issue tracker`: https://github.com/visaplan/plone.tools/issues
 
 .. vim: tw=79 cc=+1 sw=4 sts=4 si et

@@ -41,6 +41,9 @@ __all__ = ['get_debug_active',
 from os.path import normpath, sep, splitext
 from collections import defaultdict
 from traceback import extract_stack
+from logging import getLogger
+
+logger = getLogger('visaplan.plone.tools')
 
 # for convenience/development:
 try:
@@ -60,13 +63,30 @@ def get_debug_active(product, default=None):
     Lies den Konfigurationswert 'debug_active' für das übergebene Produkt aus.
     Das Ergebnis ist ein Wahrheitswert oder eine Ganzzahl.
     """
-    dic = getConfiguration().product_config.get(product, {})
-    if 'debug-active' in dic:
-        raise ValueError('Fehlerhafte Konfiguration fuer Produkt'
-                         ' %(product)r!'
-                         % locals())
-    val = dic.get('debug_active', '')
-    return makeBool(val, default)
+    try:
+        dic = getConfiguration().product_config.get(product, {})
+    except AttributeError as e:
+        logger.warn('get_debug_active(%(product)r):'
+                    ' Can\'t read configuration!',
+                    locals())
+        logger.exception(e)
+    except KeyError as e:
+        logger.warn('get_debug_active(%(product)r):'
+                    ' obviously no configuration for this product!',
+                    locals())
+        logger.exception(e)
+    else:
+        if 'debug-active' in dic:
+            raise ValueError('Fehlerhafte Konfiguration fuer Produkt'
+                             ' %(product)r!'
+                             % locals())
+        val = dic.get('debug_active', '')
+        return makeBool(val, default)
+    # in case of errors: 
+    logger.info('get_debug_active(%(product)r):'
+                ' using default %(default)r',
+                locals())
+    return makeBool(default)
 
 
 def get_raw_config(product=None, defaults={}, fn=None):

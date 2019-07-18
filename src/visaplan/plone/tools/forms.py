@@ -19,8 +19,37 @@ from time import strptime
 from bs4 import BeautifulSoup
 
 # Unitracc-Tools
-from visaplan.tools.lands0 import as_new_list
-from visaplan.plone.tools.functions import is_uid_shaped
+try:
+    from visaplan.tools.lands0 import as_new_list
+    from visaplan.plone.tools.functions import is_uid_shaped
+except ImportError:
+    if __name__ == '__main__':
+        print('Some tests will fail due to import problem')
+    else:
+        raise
+    UIDCHARS_UNICODE = frozenset(u'0123456789abcdef')
+    def is_uid_shaped(s, onerror='raise'):
+        if isinstance(s, str):
+            try:
+                s = s.decode('ascii')
+            except UnicodeDecodeError:
+                return False
+        elif isinstance(s, unicode):
+            pass
+        elif onerror == 'raise':
+            raise ValueError('String expected: %(s)r'
+                             % locals())
+        else:
+            return False
+        return len(s) == 32 and UIDCHARS_UNICODE.issuperset(s)
+    def as_new_list(val, splitfunc=None):
+        if val is None:
+            return []
+        if not isinstance(val, basestring):
+            return list(val)
+        if splitfunc is None:
+            return [s.strip() for s in val.split(',')]
+        return splitfunc(val)
 # (mit ../../scripts/run-doctests klappt der Export;
 # bei direktem Aufruf mit python oder zopepy funktionieren
 # wenigstens die Tests, die weder MockRequest noch is_uid_shaped
@@ -74,9 +103,10 @@ __all__ = ('tryagain_url',
 QUERY_ONLY_CHARS = frozenset('?&=')
 
 
-def tryagain_url(request, varnames=[],  # ------- [ tryagain_url ... [
+def tryagain_url(request, varnames=None,  # ----- [ tryagain_url ... [
                  path=None,
                  # bitte stets benannt angeben:
+                 var_items=None,
                  use_suffix=None,
                  use_first=None):
     """
@@ -87,6 +117,11 @@ def tryagain_url(request, varnames=[],  # ------- [ tryagain_url ... [
     path -- Pfad zu einer zu verwendenden Seite/Methode;
             darf keine Fragezeichen o.ä. enthalten
             (als absolute Angabe interpretiert)
+
+    ACHTUNG: Ab visaplan.plone.tools 1.2 müssen alle Argumente außer dem ersten
+             (<request>) benannt übergeben werden!
+    NOTE: Starting from visaplan.plone.tools 1.2, all arguments except the first
+          one (the request) must be given by name!
 
     >>> req = MockRequest('http://test.me/desktop/tan', tan='123',
     ...                   date='1.1.1970', other='ignoreme')
@@ -101,6 +136,9 @@ def tryagain_url(request, varnames=[],  # ------- [ tryagain_url ... [
     >>> tryagain_url(req, ['tan', 'date'],
     ...              'http://www.test.me/nur/der/pfad')
     'http://test.me/nur/der/pfad?tan=123&date=1.1.1970'
+    >>> tryagain_url(req, ['tan'],
+    ...              'manage_xy')
+    'http://test.me/manage_xy?tan=123'
 
     Für Listenwerte ist das Standardverhalten, dem Variablennamen das Suffix
     ':list' anzuhängen und alle nicht-leeren Werte zu verwenden:
@@ -116,11 +154,25 @@ def tryagain_url(request, varnames=[],  # ------- [ tryagain_url ... [
     weitergereicht, und ':list' wird per default nicht verwendet:
     >>> tryagain_url(req, ['ids'], use_first=True)
     'http://test.me/desktop/tan?ids=eins'
+
+    Alternativ zur Angabe der Variablennamen ist es auch möglich,
+    die zu verwendenden Variablen mit ihren Werten zu übergeben:
+    >>> tryagain_url(req, var_items=[('name', 'value')])
+    'http://test.me/desktop/tan?name=value'
     """
     referer = request['HTTP_REFERER']
     su = list(urlsplit(referer))
     qsl = []
     form = request.form
+    if var_items is not None:
+        if varnames is not None:
+            raise TypeError('Specify *either* varnames *or* var_items!')
+        if not isinstance(var_items, list):
+            qsl.extend(list(var_items))
+        else:
+            qsl.extend(var_items)
+    if varnames is None:
+        varnames = []
     for name in varnames:
         val = form.get(name, None)
         # print 'tryagain_url: %(name)r, %(val)r' % locals()
@@ -655,19 +707,31 @@ def uid_or_number(val, **kwargs):
 
 def make_input(data, **kwargs):
     """
-    Erzeuge HTML-input-Elemente für die übergebenen Daten
+    Erzeuge HTML-input-Elemente für die übergebenen Daten <data>.
 
-    >>> make_input({'getCustomSearch': ['portal_type=UnitraccImage']})
+    Das optionale Schlüsselwortargument <type> gibt den Typ an (Vorgabe:
+    "hidden");
+    sonstige Schlüsselwortargumente werden an den BeautifulSoup-Konstruktor
+    übergeben; hier für die Doctests:
+    >>> kw={'features': 'html.parser'}
+
+    Hauptzweck ist es, hidden-Felder zu erzeugen:
+    >>> make_input({'getCustomSearch': ['portal_type=UnitraccImage']}, **kw)
     '<input name="getCustomSearch:list" type="hidden" value="portal_type=UnitraccImage"/>'
-    >>> make_input({'getCustomSearch': ['portal_type=UnitraccImage']}, type=None)
-    '<input name="getCustomSearch:list" value="portal_type=UnitraccImage"/>'
+    >>> make_input({'depth': 3}, **kw)
+    '<input name="depth:int" type="hidden" value="3"/>'
 
     Für leere Listen wird dennoch ein (leerer) Eintrag erzeugt
     (sofern nicht irgendwie ignore_empty angezeigt ist; derartiges ist hier
     aber noch nicht implementiert)
 
-    >>> make_input({'emptylist': []})
-    '<input name="emptylist:list" value=""/>'
+    >>> make_input({'emptylist': []}, **kw)
+    '<input name="emptylist:list" type="hidden" value=""/>'
+
+    Der hidden-Typ kann durch explite Angabe einer "falschen" type-Option
+    unterdrückt werden:
+    >>> make_input({'getCustomSearch': ['portal_type=UnitraccImage']}, type=None, **kw)
+    '<input name="getCustomSearch:list" value="portal_type=UnitraccImage"/>'
     """
     # TODO: leere Elemente (Whitelist/Blacklist, :ignore_empty);
     #       vermutlich mit anderer Funktionssignatur oder Funktions-Factory
@@ -677,10 +741,21 @@ def make_input(data, **kwargs):
     # assert isinstance(data, dict), \
     #       'dictionary expected (%r)' % (data,)
     type = kwargs.pop('type', 'hidden')
-    if kwargs:
+    if type:
+        def attr_dict(name, value):
+            return {'name': name,
+                    'value': str(value),
+                    'type': type,
+                    }
+    else:
+        def attr_dict(name, value):
+            return {'name': name,
+                    'value': str(value),
+                    }
+    if kwargs and 0:
         raise TypeError('Currently all kwargs ignored! (%s)'
                         % (kwargs,))
-    soup = BeautifulSoup()
+    soup = BeautifulSoup(**kwargs)
     res = []
     for key, val in data.items():
         # Siehe http://old.zope.org/Members/Zen/howto/FormVariableTypes,
@@ -692,32 +767,20 @@ def make_input(data, **kwargs):
                 if thisval not in ('', None):
                     empty = False
                     tag = soup.new_tag('input')
-                    tag.attrs = {'name': key,
-                                 'value': str(thisval),
-                                 'type': type,
-                                 }
+                    tag.attrs = attr_dict(key, thisval)
                     res.append(str(tag))
             if empty:  # XXX checkme; wo ist das dokumentiert?!
                 tag = soup.new_tag('input')
-                tag.attrs = {'name': key,
-                             'value': '',
-                             'type': type,
-                             }
+                tag.attrs = attr_dict(key, '')
                 res.append(str(tag))
         elif isinstance(val, basestring):
             tag = soup.new_tag('input')
-            tag.attrs = {'name': key,
-                         'value': str(val),
-                         'type': type,
-                         }
+            tag.attrs = attr_dict(key, val)
             res.append(str(tag))
         elif isinstance(val, int):
             key += ':int'
             tag = soup.new_tag('input')
-            tag.attrs = {'name': key,
-                         'value': str(val),
-                         'type': type,
-                         }
+            tag.attrs = attr_dict(key, val)
             res.append(str(tag))
         else:
             raise ValueError('make_input, key=%(key)r:'

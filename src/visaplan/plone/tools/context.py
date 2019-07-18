@@ -12,6 +12,7 @@ import logging
 
 # Plone:
 from Products.CMFCore.utils import getToolByName
+from Products.CMFPlone import PloneMessageFactory as pmf
 
 # Unitracc-Tools:
 from visaplan.plone.tools.log import getLogSupport
@@ -30,6 +31,8 @@ __all__ = ['getActiveLanguage',
            'make_timeFormatter',
            'make_userdetector',
            'make_SessionDataProxy',
+           'message',
+           'getbrain',
            ]
 
 
@@ -281,3 +284,22 @@ def decorated_tool(context, toolname, limit_get_delta=0, limit=3):
 
     decorated.__doc__ = '%(toolname)s tool (decorated)' % locals()
     return decorated
+
+def message(context, message, messageType='info', mapping={}):
+    """
+    Ersetzt den gleichnamigen Tomcom-Adapter
+    """
+    pu = getToolByName(context, 'plone_utils')
+    pu.addPortalMessage(pmf(unicode(message),
+                            mapping=mapping),
+                        messageType)
+
+
+def getbrain(context, uid):
+    """
+    Ersetzt den gleichnamigen Tomcom-Adapter
+    """
+    pc = getToolByName(context, 'portal_catalog')._catalog
+    brains = pc(UID=uid)
+    if brains:
+        return brains[0]

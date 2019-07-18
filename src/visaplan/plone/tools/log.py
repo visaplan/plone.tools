@@ -46,6 +46,9 @@ def getLogSupport(name=None,
 
     Standardmäßig Debugging aktivieren:
       logger, debug_active, DEBUG = getLogSupport(..., default='True')
+
+    ... oder nur bei Entwicklungsmodus:
+      logger, debug_active, DEBUG = getLogSupport(..., defaultFromDevMode=1)
     """
     if 'stack_limit' not in kwargs:
         kwargs['stack_limit'] = 3

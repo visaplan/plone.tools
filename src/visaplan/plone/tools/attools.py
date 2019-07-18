@@ -7,6 +7,8 @@ __author__ = "Tobias Herp <tobias.herp@visaplan.com>"
 
 from collections import defaultdict
 
+from zope import event
+from Products.Archetypes.event import ObjectEditedEvent
 from Products.Archetypes.utils import mapply, shasattr
 
 from visaplan.tools.lands0 import makeSet
@@ -44,6 +46,13 @@ def initialize_rich_text_fields(instance):
               '_initializing_': True}
         kw['mimetype'] = mimetype
         mapply(mutator, *args, **kw)
+
+
+def notifyedit(context):
+    """
+    trigger on-edited events for context
+    """
+    event.notify(ObjectEditedEvent(context))
 
 
 # "Log-Level" für generierte Funktion::
