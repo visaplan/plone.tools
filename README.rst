@@ -10,7 +10,7 @@ General tools modules for Plone.
 
 We don't claim ultimate Plone wisdom (yet);
 this package is one of the parts a big monolithic classic Zope product
-was s´plit into.
+was split into.
 
 It is part of the footing of the "Unitracc family" of Plone sites
 which are maintained by visaplan GmbH, Bochum, Germany.

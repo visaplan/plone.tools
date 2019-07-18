@@ -13,6 +13,16 @@ Changelog
       (which is possible and recommended already).
 
 
+1.1.6 (unreleased)
+-----------------
+
+Bugfixes:
+
+- Typo in README corrected.
+
+[tobiasherp]
+
+
 1.1.5 (2019-07-18)
 ------------------
 
