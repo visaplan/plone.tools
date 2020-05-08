@@ -8,6 +8,8 @@ VERSION = (0,
            1,   # initial version
            )
 
+from Products.CMFCore.utils import getToolByName
+
 from visaplan.tools.lands0 import list_of_strings
 
 
@@ -87,36 +89,10 @@ def language_spec(value=None, form=None, context=None,
     if has_all:
         if all_languages is None:
             if language_tool is None:
-                language_tool = context.getAdapter('pl')()
+                language_tool = getToolByName(context, 'portal_languages')
             all_languages = [tup[0]
                              for tup in language_tool.listSupportedLanguages()
                              ]
         values.update(all_languages)
     # print '*** language_spec --> sorted(%(values)r)' % locals()
     return sorted(values)
-
-
-NONTHUMBNAIL_PORTALTYPES = ['UnitraccTable',
-                            ]
-def queries_nonthumbnail_types_only(query):
-    """
-    Die übergebene Suche spezifiziert Typen, und zwar ausschließlich solche,
-    die explizit keine sinnvollen Vorschaubilder haben
-
-    (für die lokale Suche)
-    """
-    try:
-        pt_spec = query['portal_type']
-    except KeyError:
-        return False
-    else:
-        if isinstance(pt_spec, basestring):
-            pt_spec = [pt_spec]
-        vals = set()
-        for pt in pt_spec:
-            vals.add(pt in NONTHUMBNAIL_PORTALTYPES)
-        if len(vals) != 1:
-            return False
-        return list(vals)[0]  # Wert des einzigen Elements
-
-
