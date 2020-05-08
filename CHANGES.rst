@@ -9,12 +9,25 @@ Changelog
 
   - ``forms.tryagain_url``:
 
-    - all options (which are all arguments except the request) will need to be given by name
-      (which is possible and recommended already).
+    - all options (which are all arguments except the request) will `need to` be given by name
+      (which is possible and `recommended already`).
 
 
-1.1.6 (unreleased)
------------------
+1.1.6 (2019-11-27)
+------------------
+
+New modules:
+
+- ``decorators`` module:
+
+  - ``@returns_json``
+    (uses simplejson_ if available)
+
+New utilities:
+
+- ``context`` module:
+
+  - function factory ``make_timeformatter``
 
 Bugfixes:
 
@@ -28,10 +41,10 @@ Bugfixes:
 
 Bugfixes:
 
-- `getConfiguration` might fail; in such cases, log a warning and use the default
+- ``getConfiguration`` might fail; in such cases, log a warning and use the default
 - Missing requirements:
 
-  - ``visaplan.kitchen``
+  - visaplan.kitchen_
 
 [tobiasherp]
 
@@ -132,7 +145,7 @@ Bugfixes:
 
   - a few small classes for use in doctests
 
-  - the same module as ``visaplan.tools.mock``
+  - the same module as visaplan.tools_ .mock
 
 - ``mock_cfg`` module added:
 
@@ -160,3 +173,7 @@ Bugfixes:
 
 - Initial release.
   [tobiasherp]
+
+.. _simplejson: https://pypi.org/project/simplejson
+.. _visaplan.kitchen: https://pypi.org/project/visaplan.kitchen
+.. _visaplan.tools: https://pypi.org/project/visaplan.tools

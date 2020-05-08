@@ -97,6 +97,14 @@ Modules in version 1.1.4+:
 
     - the source is in an development package.
 
+- ``decorators`` module (since v1.1.6)
+
+  - ``@returns_json``:
+
+    Wraps the function call and returns the JSON_-encoded result,
+    including HTTP headers.
+
+    Uses simplejson_ if available.
 
 Documentation
 -------------
@@ -145,5 +153,7 @@ License
 The project is licensed under the GPLv2.
 
 .. _`issue tracker`: https://github.com/visaplan/plone.tools/issues
+.. _JSON: https://json.org/
+.. _simplejson: https://pypi.org/project/simplejson
 
 .. vim: tw=79 cc=+1 sw=4 sts=4 si et
