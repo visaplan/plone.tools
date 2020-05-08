@@ -303,3 +303,33 @@ def getbrain(context, uid):
     brains = pc(UID=uid)
     if brains:
         return brains[0]
+
+
+def make_timeformatter(context, **kwargs):
+    util = getToolByName(context, 'translation_service')
+    longFormat = kwargs.pop('longFormat', False)
+    domain = kwargs.pop('domain', 'plonelocales')
+    if kwargs:
+        raise TypeError('Unsupported kwargs! (%(kwargs)r)'
+                        % locals())
+    assert not kwargs
+    default_context = context
+    func = util.ulocalized_time
+    default_request = context.REQUEST
+
+    def totime(time, longFormat=longFormat,
+               context=None,
+               domain='plonelocales',
+               request=None):
+        if not time:
+            return None
+        if context is None:
+            context = default_context
+        if request is None:
+            request = default_request
+        return func(time, longFormat,
+                    context=context,
+                    domain=domain,
+                    request=request)
+
+    return totime
