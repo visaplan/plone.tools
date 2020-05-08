@@ -106,10 +106,15 @@ def get_raw_config(product=None, defaults={}, fn=None):
                              % locals())
         product = split_filename(fn)[0]
 
-    dic = getConfiguration().product_config.get(product, {})
-    if defaults:
-        defaults.update(dic)
+    conf = getConfiguration()
+    if conf is None:
         return defaults
+    dic = conf.product_config.get(product, {})
+    if defaults:
+        res = {}
+        res.update(defaults)
+        res.update(dic)
+        return res
     else:
         return dic
 
