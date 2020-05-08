@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*- vim: et ts=8 sw=4 sts=4 si tw=79 cc=+1
 """Installer for the visaplan.plone.tools package."""
+from __future__ import absolute_import
+from __future__ import print_function
 
 from setuptools import find_packages
 from setuptools import setup
@@ -23,7 +25,7 @@ def valid_suffix(suffix):
     suffix = suffix.strip()
     if not suffix:
         return suffix
-    allowed = set('.dev0123456789')
+    allowed = set('.dev0123456789rc')
     disallowed = set(suffix).difference(allowed)
     if disallowed:
         disallowed = ''.join(sorted(disallowed))
@@ -114,6 +116,10 @@ def github_urls(package, **kwargs):
             user = pkg_list[0]
             if 'user' in kwargs:
                 assert pop('user') == user
+    if pop('travis', False):  # reqires github to be trueish
+        res.update({  # CHECKME: is there a de-facto standard key for this?
+            'Tests': 'https://travis-ci.org/%(user)s/%(package)s' % locals()
+            })
     base = 'https://github.com/%(user)s/%(package)s' % locals()
     res.update({
         'Source': base,
@@ -135,6 +141,7 @@ setup_kwargs = dict(
         "Environment :: Web Environment",
         "Framework :: Plone",
         "Framework :: Plone :: 4.3",
+        'Framework :: Zope2',
         "Programming Language :: Python",
         "Programming Language :: Python :: 2.7",
         "Intended Audience :: Developers",
@@ -165,13 +172,17 @@ setup_kwargs = dict(
     ],
     extras_require={
         'test': [
-            'plone.app.testing',
+            'nose2',
+            #'plone.app.testing',
             # plone.app.robotframework 1.2.0 requires plone.testing 4.0.11; 
             # plone.app.robotframework 1.3+ drops Plone 4.3 compatibility:
-            'plone.testing',
-            'plone.app.robotframework[debug]',
+            #'plone.testing',
+            #'plone.app.robotframework[debug]',
         ],
     },
+    # see:
+    # https://docs.nose2.io/en/latest/usage.html#running-tests-with-python-setup-py-test
+    test_suite='nose2.collector.collector',
     entry_points="""
     [z3c.autoinclude.plugin]
     target = plone
