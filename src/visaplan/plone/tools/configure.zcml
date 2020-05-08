@@ -1,16 +1,3 @@
 <configure
     xmlns="http://namespaces.zope.org/zope">
-    <!-- [ Modules of this Product ... [ -->
-    <include package=".attools" />
-    <include package=".brains" />
-    <include package=".cfg" />
-    <include package=".context" />
-    <include package=".forms" />
-    <include package=".functions" />
-    <include package=".log" />
-    <include package=".mock_cfg" />
-    <include package=".mock" />
-    <include package=".search" />
-    <include package=".setup" />
-    <!-- ] ... Modules of this Product ] -->
 </configure>
