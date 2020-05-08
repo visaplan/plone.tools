@@ -11,6 +11,7 @@ VERSION = (0,
 __version__ = '.'.join(map(str, VERSION))
 __all__ = ('MockPortal',
            'MockRequest',
+           'MockObject',
            'MockBrain',
            'MockProfile',
            'MockLogger',
@@ -33,6 +34,27 @@ class MockRequest(dict):
         self.form = dict(kwargs)
 
 
+class MockObject(object):
+    """
+    Any persistent object in the ZODB object tree
+    (which might be added to some catalog)
+
+    Currently this doesn't support any special features:
+    >>> o = MockObject()
+    >>> o
+    <an object>
+
+    ... but it is considered seekable:
+    >>> o.getHereAsBrain()
+    <a brain>
+    """
+    def __repr__(self):
+        return '<an object>'
+
+    def getHereAsBrain(self):
+        return MockBrain()
+
+
 class MockBrain(dict):
     """
     Brain-Objekte haben folgende Methoden:
@@ -40,6 +62,10 @@ class MockBrain(dict):
 
     Der Zugriff funktioniert aber nicht mit b.get(key),
     sondern nur mit getattr(b, key) ...
+
+    MockBrains point to (currently: very basic) MockObjects:
+    >>> MockBrain().getObject()
+    <an object>
     """
 
     def __init__(self, **kwargs):
@@ -52,6 +78,19 @@ class MockBrain(dict):
                            ', '.join(['%s=%r' % (key, self[key])
                                       for key in sorted(self.keys())
                                       ]))
+
+    def __repr__(self):
+        """
+        This is currently very basic
+        (satisfying the needs of setup/_args.py):
+
+        >>> MockBrain()
+        <a brain>
+        """
+        return '<a brain>'
+
+    def getObject(self):
+        return MockObject()
 
 
 class MockProfile:
@@ -99,6 +138,7 @@ class MockBrowser:
     Für Doctests von Browsermethoden
     """
     context = MockContext()
+
 
 if __name__ == '__main__':
     import doctest
