@@ -3,6 +3,12 @@
 functions: very simple functions for Plone
 """
 
+# Python compatibility:
+from __future__ import absolute_import
+
+from six import text_type as six_text_type
+from six.moves import map
+
 __author__ = "Tobias Herp <tobias.herp@visaplan.com>"
 VERSION = (1,
            0,
@@ -15,10 +21,8 @@ __all__ = ['is_uid_shaped',
            # ---------------- ] ... aus Products.unitracc.tools.misc ]
            ]
 
-# Standardmodule
-from os.path import (
-        splitext, split,
-        )
+# Standard library:
+from os.path import split, splitext
 
 UIDCHARS_UNICODE = frozenset(u'0123456789abcdef')
 def is_uid_shaped(s, onerror='raise'):
@@ -40,7 +44,7 @@ def is_uid_shaped(s, onerror='raise'):
             s = s.decode('ascii')
         except UnicodeDecodeError:
             return False
-    elif isinstance(s, unicode):
+    elif isinstance(s, six_text_type):
         pass
     elif onerror == 'raise':
         raise ValueError('String expected: %(s)r'
@@ -106,5 +110,6 @@ def id_of(name):
 
 
 if __name__ == '__main__':
+    # Standard library:
     import doctest
     doctest.testmod()

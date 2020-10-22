@@ -3,29 +3,34 @@
 Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _workflow
 """
 
-# Standardmodule
+# Python compatibility:
+from __future__ import absolute_import
+
+from six import string_types as six_string_types
+
+# Standard library:
 from collections import defaultdict
 
-# Exceptions:
-
-# Plone, sonstiges:
+# Zope:
 from Products.CMFCore.utils import getToolByName
 from Products.CMFCore.WorkflowCore import WorkflowException
 
-# Unitracc-Tools:
+# visaplan:
 from visaplan.tools.classes import DictOfSets
 
-# Logging und Debugging:
+# Local imports:
+from ._roles import set_local_roles
+from ._watch import make_watcher_function
+
+# Logging / Debugging:
 import logging
 from pdb import set_trace
 
-# local imports from sister modules:
-from ._roles import (
-        set_local_roles,
-        )
-from ._watch import (
-        make_watcher_function,
-        )
+# Exceptions:
+
+
+
+
 
 __all__ = [
         'make_transition_applicator',
@@ -150,7 +155,7 @@ def make_transition_applicator(**kwargs):  # ---- [ m._t._a. ... [ -[[
         theset, target_state, func = tup
         if target_state in done_sets:
             raise ValueError('duplicate status %(target_state)r!' % locals())
-        elif not isinstance(target_state, basestring):
+        elif not isinstance(target_state, six_string_types):
             raise ValueError('Workflow status expected! (%target_state()r)'
                              % locals())
         target_sets.add_set(target_state)
@@ -228,7 +233,7 @@ def make_transition_applicator(**kwargs):  # ---- [ m._t._a. ... [ -[[
     tell_about_uids = kwargs.pop('tell_about_uids', False)
     if tell_about_uids:
         if isinstance(tell_about_uids, dict):
-            tell_about_uids = tell_about_uids.items()
+            tell_about_uids = list(tell_about_uids.items())
     
     # ------------ [ m._t._a.: generierte Infofunktion ... [
     stored_hits = {'prev': None,

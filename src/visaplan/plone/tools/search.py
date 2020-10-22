@@ -1,16 +1,149 @@
 # -*- coding: utf-8 -*- vim: ts=8 sts=4 sw=4 si et tw=79
 """\
-Search Tools - Unterstützung für Suchfunktionen
+visaplan.plone.tools.search - search helpers
 """
+# Python compatibility:
+from __future__ import absolute_import, print_function
+
+from six import text_type as six_text_type
 
 __author__ = "Tobias Herp <tobias.herp@visaplan.com>"
 VERSION = (0,
-           1,   # initial version
+           2,   # normalizeQueryString
            )
 
-from Products.CMFCore.utils import getToolByName
+__all__ = [
+        'normalizeQueryString',  # created by factory:
+        'make_querystring_normalizer',
+        'language_spec',
+        ]
 
+try:
+    # Zope:
+    from Products.CMFCore.utils import getToolByName
+except ImportError:
+    if __name__ == '__main__':
+        class MockLanguageTool(object):
+            def listSupportedLanguages():
+                return [('en', 'English'), ('de', 'Deutsch')]
+        def getToolByName(context, name):
+            if name == 'portal_languages':
+                return MockLanguageTool
+    else:
+        raise
+
+# visaplan:
 from visaplan.tools.lands0 import list_of_strings
+
+try:
+    # visaplan:
+    from visaplan.tools.coding import safe_decode
+except (ImportError, ValueError):
+    if __name__ == '__main__':
+        safe_decode = six_text_type
+        print('Install visaplan.tools to properly test the normalizeQueryString function!')
+    else:
+        raise
+
+
+def make_querystring_normalizer(decode=safe_decode):
+    r"""
+    Factory to create a `normalizeQueryString` function,
+    injecting the default decoding function;
+    by default, the safe_decode function from visaplan.tools is used,
+    which (or course) recognizes unicode strings and decodes UTF8 and Latin-1.
+
+    You may want to replace this `decode` argument by your own function,
+    e.g. to
+
+    - raise an exception if a non-unicode string is given,
+      or
+    - log calls which use non-unicode strings (to help during development)
+
+    This factory is called by the module code to create the default
+    `normalizeQueryString` function:
+
+    >>> normalizeQueryString = make_querystring_normalizer(safe_decode)
+
+    ... which will accept a string (and optionally another decoding function)
+    and return a (possibly empty) list of unicode strings.
+
+    For empty input, an empty list is returned:
+
+    >>> normalizeQueryString('')
+    []
+    >>> normalizeQueryString(u'')
+    []
+    >>> normalizeQueryString('   \t \n \r')
+    []
+
+    There is special handling for the asterisk character ("*"):
+
+    - If it is not present anywhere in the (non-empty) input string,
+      it is added to the beginning and end of every string:
+
+      >>> normalizeQueryString('abc')
+      [u'*abc*']
+      >>> normalizeQueryString(u'abc')
+      [u'*abc*']
+      >>> normalizeQueryString('   abc\t  def  ')
+      [u'*abc*', u'*def*']
+      >>> normalizeQueryString('entkoppelte Förderschnecke ')
+      [u'*entkoppelte*', u'*F\xf6rderschnecke*']
+
+    - If it *is* contained somewhere, we assume the user to do this on purpose,
+      and thus don't amend the asterisk anywhere:
+
+      >>> normalizeQueryString('ab*c')
+      [u'ab*c']
+      >>> normalizeQueryString('rohr* leitung  ')
+      [u'rohr*', u'leitung']
+
+    - a single-word asterisk is removed and simply causes the asterisk
+      amemdments to be suppressed:
+
+      >>> normalizeQueryString('rohr * leitung  ')
+      [u'rohr', u'leitung']
+
+    - Of course, a single asterisk *only* is like no search expression at all:
+
+      >>> normalizeQueryString('  * ')
+      []
+    """
+    def normalizeQueryString(string, decode=decode):
+        """
+        Return a (possibly empty) list of unicode strings.
+
+        Arguments:
+
+          string -- a string of some kind
+          
+          decode -- a function to check and, if necessary,
+                    decode the given string 
+        """
+        # searchstring is None or empty
+        if not string:
+            return []
+
+        if not isinstance(string, six_text_type):
+            string = decode(string)
+        if string.strip() == u'*':
+            return []
+        has_asterisk = u'*' in string
+        strings = string.split()
+        if has_asterisk or u'*' in strings:
+            # ein alleinstehendes Asterisk würde *immer* passen;
+            # also nur zur Unterdrückung der Automatik nutzen:
+            return [s for s in strings
+                    if s != u'*'
+                    ]
+        else:
+            return [s.join((u'*', u'*'))
+                    for s in strings
+                    ]
+
+    return normalizeQueryString
+normalizeQueryString = make_querystring_normalizer(safe_decode)
 
 
 def language_spec(value=None, form=None, context=None,
@@ -72,7 +205,6 @@ def language_spec(value=None, form=None, context=None,
             value = form['language']
         except KeyError:
             value = []
-    # print '*** language_spec: value=%(value)r' % locals()
     values = set([s2 for s2 in
                      [s.strip() for s in list_of_strings(value)]
                   if s2
@@ -94,5 +226,10 @@ def language_spec(value=None, form=None, context=None,
                              for tup in language_tool.listSupportedLanguages()
                              ]
         values.update(all_languages)
-    # print '*** language_spec --> sorted(%(values)r)' % locals()
     return sorted(values)
+
+
+if __name__ == "__main__":
+    # Standard library:
+    import doctest
+    doctest.testmod()

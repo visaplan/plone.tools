@@ -15,24 +15,32 @@ TO DO:
   - eine Gruppierung nach Typen
 """
 
-# Standardmodule
-from os.path import join, isdir, isfile, split, abspath, normcase, sep
-from os import listdir
-from difflib import Differ
+# Python compatibility:
+from __future__ import absolute_import, print_function
 
+from six import string_types as six_string_types
+
+# Standard library:
 import sys
+from difflib import Differ
+from os import listdir
+from os.path import abspath, isdir, isfile, join, normcase, sep, split
+
+# Logging / Debugging:
 from pdb import set_trace
 
-# Zope/Plone
 try:
+    # Zope:
     from Globals import DevelopmentMode
 except ImportError:
+    # Hotfix for Zope 4; how to properly replace this?
     if __name__ == '__main__':
-    	DevelopmentMode = True
+        DevelopmentMode = True
     else:
-    	raise
+        DevelopmentMode = False
 
-from visaplan.plone.base.exceptions import OutdatedFileError, MissingFileError
+# visaplan:
+from visaplan.plone.base.exceptions import MissingFileError, OutdatedFileError
 
 __all__ = [
         'BasicGenerator',
@@ -84,12 +92,32 @@ class BasicGenerator(object):
     Abstrakte Basisklasse;
     fehlende Methoden z. B. in ResourceGenerator definiert
     """
-    def __init__(self, fn):
+    def __init__(self, fn, **kwargs):
+        """
+        Construct a BasicGenerator
+
+        Arguments:
+
+          fn -- the file name of the calling module (__file__)
+
+        Options (keyword-only):
+
+          skip -- names of entries to exclude from the generation.
+                  A sequence; if a string, will be split.
+        """
         dirname, filename = split(fn)
         self.base_path = abspath(dirname)
         self.blacklist = set(_DENIED)
         # die generierende Datei bleibt außen vor:
         self.blacklist.add(filename)
+        skip_more = kwargs.pop('skip', None)
+        if skip_more:
+            if isinstance(skip_more, six_string_types):
+                skip_more = skip_more.split()
+            self.blacklist.update(skip_more)
+        if kwargs:
+            raise TypeError('Unknown arguments!')
+
         self.zcml_name = join(self.base_path, 'configure.zcml')
 
     def __repr__(self):
@@ -132,6 +160,14 @@ class BasicGenerator(object):
         return _FRAME % ''.join(self.generate_list())
 
     def write(self, devmode=None):
+        """
+        Schreibe eine aktuelle (generische) configure.zcml-Datei
+        und wirf eine Exception, wenn sie hinterher nicht in der erwarteten Form existiert.
+
+        Achtung - es findet ein relativ einfacher Textvergleich statt;
+        sobald z. B. Anpassungen für einzelne Browserseiten nötig werden,
+        ist diese Generierung nicht mehr anwendbar und muß deaktiviert werden!
+        """
         txt = self.generate_text()
         fn = self.zcml_name
         found = isfile(fn)
@@ -175,7 +211,7 @@ class BasicGenerator(object):
             if not difference.startswith('  ')  # unchanged lines
             and difference not in ('+ ', '- ')  # empty lines added/removed
             ]:
-            print('\n'.join(difflines))
+            print(('\n'.join(difflines)))
             if sys.stdout.isatty():
                 set_trace()
             return False
@@ -262,11 +298,11 @@ class TemplateGenerator(BasicGenerator):
 
     def __init__(self, fn, aliases=(), aliasdict_func=None,
                  include_extensions=('.xml.pt', '.pt',
-                                     )):
+                                     ), **kwargs):
         """
         aliases-Funktionalität derzeit noch nicht in Verwendung
         """
-        BasicGenerator.__init__(self, fn)
+        BasicGenerator.__init__(self, fn, **kwargs)
 
         if aliases:
             if isinstance(aliases, set):
@@ -293,7 +329,7 @@ class TemplateGenerator(BasicGenerator):
                 if pn is not None:
                     break
             if pn is None:
-                print 'SKIPPING: %s' % join(self.base_path, fn)
+                print('SKIPPING: %s' % join(self.base_path, fn))
                 continue
             yield {'filename': fn,
                    'name': pn,
@@ -359,19 +395,20 @@ def changeable_path(fullpath, devmode=None):
     filename = splitpath.pop()
     # TODO: normcase for whitelist
     if filename not in ('version.txt',
-    	                'configure.zcml',
-    	                ):
-    	return False
+                        'configure.zcml',
+                        ):
+        return False
     for seg in splitpath:
-    	if seg.endswith('.egg'):
-    	    return False
+        if seg.endswith('.egg'):
+            return False
     if not set(['src', 'Products']).intersection(splitpath):
-    	return False
+        return False
     if devmode is None:
-    	devmode = DevelopmentMode
+        devmode = DevelopmentMode
     return devmode or False
 
 
 if __name__ == '__main__':
+    # Standard library:
     import doctest
     doctest.testmod()

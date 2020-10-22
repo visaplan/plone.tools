@@ -3,7 +3,12 @@
 Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _watch
 """
 
-# Standardmodule
+# Python compatibility:
+from __future__ import absolute_import
+
+from six import string_types as six_string_types
+
+# Standard library:
 from collections import defaultdict
 
 __all__ = [
@@ -46,7 +51,7 @@ def make_watcher_function(val, logger, **kwargs):
     all_value = kwargs.pop('all_value', 'ALL')
     def checked_value(thelist):
         if (thelist != all_value and
-            isinstance(thelist, basestring)
+            isinstance(thelist, six_string_types)
             ):
             return [thelist]
         if isinstance(thelist, tuple):

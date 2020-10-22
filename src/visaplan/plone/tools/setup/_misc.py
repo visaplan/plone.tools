@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*- äöü vim: sw=4 sts=4 et tw=79
-from string import capitalize
+# Python compatibility:
+from __future__ import absolute_import
+
+from six.moves import map
+
+# Standard library:
 from posixpath import normpath
+from string import capitalize
 
 
 def _traversable_path(path):
@@ -37,5 +43,6 @@ def make_title(id):
 
 
 if __name__ == '__main__':
+    # Standard library:
     import doctest
     doctest.testmod()

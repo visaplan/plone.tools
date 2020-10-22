@@ -3,9 +3,15 @@
 Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _query
 """
 
+# Python compatibility:
+from __future__ import absolute_import
+
+from six import string_types as six_string_types
+
+# Zope:
 from Products.CMFCore.utils import getToolByName
 
-# Standardmodule
+# Logging / Debugging:
 import logging
 
 __all__ = [
@@ -41,7 +47,7 @@ def make_query_extractor(context, do_pop=True):
             ]:
             if name in dic:
                 val = pop(name)
-                if isinstance(val, basestring):
+                if isinstance(val, six_string_types):
                     val = [val]
                 query[name] = val
         # Vorgabe: alle aktiven Sprachen
@@ -49,7 +55,7 @@ def make_query_extractor(context, do_pop=True):
         if Language is None:
             Language = getAllLanguages(context)
         # https://docs.plone.org/develop/plone/searching_and_indexing/query.html#bypassing-language-check:
-        if isinstance(Language, basestring) and Language != 'all':
+        if isinstance(Language, six_string_types) and Language != 'all':
             Language = [Language]
         query['Language'] = Language
         return query

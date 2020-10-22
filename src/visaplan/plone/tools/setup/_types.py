@@ -3,11 +3,14 @@
 Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _types
 """
 
-# Standardmodule
-import logging
+# Python compatibility:
+from __future__ import absolute_import
 
-# Plone, sonstiges:
+# Zope:
 from Products.CMFCore.utils import getToolByName
+
+# Logging / Debugging:
+import logging
 
 __all__ = [
         'setVersionedTypes',

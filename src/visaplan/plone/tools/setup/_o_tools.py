@@ -6,21 +6,40 @@ and (_make_folder).make_subfolder_creator()
 All tools in this module are called in the same style.
 """
 
-from collections import defaultdict
+# Python compatibility:
+from __future__ import absolute_import
 
+from six.moves import map
+
+# Standard library:
+from collections import defaultdict
+from pprint import pprint
+
+# Zope:
+from Products.CMFCore.utils import getToolByName
+
+# Local imports:
 from ._args import (
-        extract_menu_switch,
-        extract_layout_switch,
-        _extract_move_args,
-        )
+    _extract_move_args,
+    extract_layout_switch,
+    extract_menu_switch,
+    )
+from ._exc import AlreadyTranslated  # from LinguaPlone, or a dummy
+from ._exc import CantAddTranslationReference  # ... enhanced information
+
+# Logging / Debugging:
+from pdb import set_trace
+from visaplan.tools.debug import pp
 
 __all__ = [
+        'handle_title',
         'handle_language',
         'handle_layout',
-        'handle_title',
+        'handle_menu',
         # minilogging system:
         'make_miniloggers',  # used here
         'make_notes_logger', # used in calling functions
+        # operating on connected objects:
         ]
 
 # ----------------------------------------- [ minilogging system ... [
@@ -168,9 +187,6 @@ def handle_language(o, kwdict, created, do_pop=True):
     else:
         found_canonical = 0
 
-    change_language = None
-    change_canonical = None
-
     if language_given:
         if set_language is None:
             _DBG('set_language?')
@@ -212,9 +228,25 @@ def handle_language(o, kwdict, created, do_pop=True):
                 _DBG('%(set_canonical)r (old and new values falsy;'
                      '%(found_canonical)r, %(canonical)r)', locals())
             elif canonical != found_canonical:
-                set_canonical = True
                 _DBG('%(set_canonical)r (different values;'
                      '%(found_canonical)r --> %(canonical)r)', locals())
+                can_path = '(unknown)'
+                found_path = '(unknown)'
+                try:
+                    tup = canonical.getPhysicalPath()
+                    can_path = '/'.join(tup)
+                    tup = found_canonical.getPhysicalPath()
+                    found_path = '/'.join(tup)
+                    set_canonical = found_path != can_path
+                except Exception as e:
+                    _ERR('Error! (%(e)r)', locals())
+                    raise
+                finally:
+                    _NFO('\n<new canonical>.getPath = %(can_path)r,'
+                         '\n<old canonical>.getPath = %(found_path)r', locals())
+                if not set_canonical:
+                    _DBG('"different" objects but equal paths!')
+                    set_trace()
             elif (found_canonical
                     and language_given
                     and language != found_language):
@@ -243,10 +275,27 @@ def handle_language(o, kwdict, created, do_pop=True):
                 _NFO('Setting language to %(language)r', locals())
                 o.setLanguage(language)
                 changed = True
-            if canonical:
+            if canonical and canonical != o:
                 _NFO('Setting canonical to %(canonical)r', locals())
-                o.addTranslationReference(canonical)
-                changed = True
+                try:
+                    o.addTranslationReference(canonical)
+                except AlreadyTranslated as e:
+                    _ERR('%(o)r is already translated!', locals())
+                    _ERR(str(CantAddTranslationReference(o, canonical)), {})
+                    if 0: pprint({
+                        'o': o, 'canonical': canonical,
+                        'identical?': canonical is o,
+                        })
+                    set_trace()
+                    nochmal = 0
+                    if nochmal:
+                        o.addTranslationReference(canonical)
+                    else:
+                        # https://www.python.org/dev/peps/pep-0344/#explicit-exception-chaining
+                        # should work, shouldn't it?! (for me, it won't)
+                        raise CantAddTranslationReference(o, canonical) # from e
+                else:
+                    changed = True
     # ----------------------- ] ... canonical, with language implied ]
 
     if changed:  # if canonical was given, we'll have set the language
@@ -309,7 +358,7 @@ def handle_menu(o, kwdict, created, do_pop=True):
     notes = []
     _DBG, _NFO, _ERR = make_miniloggers(notes)
 
-    switch_menu = extract_menu_switch(kwdict, do_pop=do_pop)
+    switch_menu = extract_menu_switch(kwdict, created, do_pop=do_pop)
     if switch_menu is not None:
         val = not switch_menu
         o.setExcludeFromNav(val)

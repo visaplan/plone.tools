@@ -3,26 +3,23 @@
 Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _tree
 """
 
-# Standardmodule
+# Python compatibility:
+from __future__ import absolute_import
 
-# Exceptions:
+# Zope:
+from Products.CMFCore.utils import getToolByName
 from ZODB.POSException import POSKeyError
 
-# Plone, sonstiges:
-from Products.CMFCore.utils import getToolByName
+# 3rd party:
 import transaction
 
-# Unitracc-Tools:
-from visaplan.tools.debug import pp
+# Local imports:
+from ._query import make_query_extractor
 
-# Logging und Debugging:
+# Logging / Debugging:
 import logging
 from pdb import set_trace
-
-# local imports from sister modules:
-from ._query import (
-        make_query_extractor,
-        )
+from visaplan.tools.debug import pp
 
 __all__ = [
         'make_reindexer',
@@ -45,7 +42,10 @@ def make_reindexer(**kwargs):
 
     Vorgabewerte für die zu erzeugenden Funktion:
 
-    update_metadata
+    update_metadata - sollen die Metadaten aktualisiert werden?
+                      (Vorgabe: True)
+                      Wenn None, werden die Metadaten aktualisiert,
+                      wenn eine leere Liste der Indexe übergeben wird.
     """
     logger = kwargs.pop('logger', None)
     if logger is None:
@@ -84,6 +84,10 @@ def make_reindexer(**kwargs):
     def reindex(brain=None,
                 o=None):
         """
+        Reindex the given object (by default given as brain!)
+
+        If computing the object yourself, don't give the brain
+        but specify the object by name: reindex(o=theobject).
         """
         if o is None:  # Normalfall
             if brain is None:
@@ -102,7 +106,7 @@ def make_reindexer(**kwargs):
                 return False
         elif brain is not None:
             o2 = brain.getObject()
-            if o2 is not o:
+            if o2 != o:  # check for identity was too strict!
                 logger.error("brain %(brain)r doesn't match object %(o)r",
                              locals())
                 return False
@@ -141,7 +145,22 @@ def make_reindexer(**kwargs):
 
 def reindex_all(**kwargs):
     """
-    Reindiziert die angegebenen Objekte
+    Reindiziere die angegebenen Objekte.
+
+    Mögliche benannte Argumente:
+
+    - von make_query_extractor() extrahierte Suchparameter,
+      als da wären
+
+      - getCustomSearch
+      - getExcludeFromSearch
+      - Language
+      - path
+      - portal_type
+
+    - Argumente zum Erzeugen eines Reindexers
+
+    ...
     """
     logger = kwargs.pop('logger', None)
     if logger is None:

@@ -6,33 +6,61 @@ Funktionen, die im Rahmen eines Aufruf-Kontexts hilfreich sind
 (also nicht über den aktuellen Request hinaus)
 """
 
-# Standardmodule:
-from traceback import extract_stack
-import logging
+# Python compatibility:
+from __future__ import absolute_import, print_function
 
-# Plone:
+from six import string_types as six_string_types
+
+# Setup tools:
+import pkg_resources
+
+# Standard library:
+from traceback import extract_stack
+
+# Zope:
 from Products.CMFCore.utils import getToolByName
 from Products.CMFPlone import PloneMessageFactory as pmf
 
-# Unitracc-Tools:
-from visaplan.plone.tools.log import getLogSupport
-from visaplan.tools.minifuncs import gimme_False
-from visaplan.tools.debug import log_or_trace
-from visaplan.tools.debug import asciibox
+# visaplan:
+from visaplan.tools.coding import safe_decode
+from visaplan.tools.minifuncs import check_kwargs, gimme_False
 
+# Logging / Debugging:
+import logging
+from visaplan.plone.tools.log import getLogSupport
+from visaplan.tools.debug import asciibox, log_or_trace
+
+try:
+    pkg_resources.get_distribution('zope.i18n')
+except pkg_resources.DistributionNotFound:
+    HAS_ZOPE_I18N = False
+else:
+    HAS_ZOPE_I18N = True
+    # Zope:
+    from zope.i18n import translate as z3translate
 
 __author__ = "Tobias Herp <tobias.herp@visaplan.com>"
 VERSION = (0,
-           4,   # getActiveLanguage
+           5,   # getMessenger; make_permissionChecker improved
            )
 
 __all__ = ['getActiveLanguage',
+           'getSupportedLanguageTuples',
+           'make_translator',
+           'make_pathByUIDGetter',
            'make_permissionChecker',
            'make_timeFormatter',
            'make_userdetector',
            'make_SessionDataProxy',
-           'message',
+           'message',       # uses safe_decode
+           'getMessenger',  # accepts a decoder argument
            'getbrain',
+           'make_brainGetter',
+           'parents',
+           'parent_brains',
+           'get_parent',
+           'getPath',
+           'get_published_templateid',
            ]
 
 
@@ -50,29 +78,101 @@ def getActiveLanguage(context):
     return language_tool.getDefaultLanguage()
 
 
+def getSupportedLanguageTuples(context):
+    """
+    Return a list of language tuples, for the languages supported in this site
+    """
+    language_tool = getToolByName(context, 'portal_languages')
+    getName = language_tool.getNameForLanguageCode
+    liz = []
+    for langCode in language_tool.getSupportedLanguages():
+        liz.append((langCode, getName(langCode)))
+    return liz
+
+
+def make_translator(context, domain=None, target_language=None):
+    """
+    Create a function which calls zope.i18n.translate with sensible defaults
+    """
+    if not HAS_ZOPE_I18N:
+        def dummy(msgid,
+                  domain=domain,
+                  mapping=None,
+                  target_language=target_language,
+                  default=None):
+            """
+            translation dummy; zope.i18n not installed
+            """
+            return default or msgid
+        return dummy
+
+    if not domain:
+        domain = 'plone'
+    if not target_language:
+        target_language = getActiveLanguage(context)
+    def translate(msgid,
+                  domain=domain,
+                  mapping=None,
+                  target_language=target_language,
+                  default=None):
+        if not domain:
+            domain = 'plone'
+        if not target_language:
+            target_language = getActiveLanguage(context)
+        return z3translate(msgid, domain, mapping,
+                           context, target_language, default)
+    return translate
+
+
 def make_permissionChecker(context=None, getAdapter=None,
                            checkperm=None, verbose=None):
     """
-    Erzeuge eine Funktion, die eine übergebene Berechtigung prüft
-    und einen Wahrheitswert zurückgibt.
+    Create a function to check the given permission.
 
-    Achtung - unbekannte (z. B. falsch geschriebene) Bezeichnungen zeitigen
-    keinen Fehler, sondern den Rückgabewert False!
+    Options:
+
+    context -- usually the only one given.
+               If so, the usual membership_tool.checkPermission method is used,
+               with a context default value injected.
+
+    Please specify all following options by name:
+
+    getAdapter -- deprecated;
+                  if given, it is used to get a 'checkperm' adapter
+                  (which is not present in standard Plone and uses a fixed
+                  context argument, which is the one bound to that getAdapter
+                  method)
+    checkperm -- rarely needed: You might want to use a special permission
+                 checking function and add the logging facility.
+    verbose -- if True, every check for a permission will be logged.
+
+    Usage:
+
+      checkperm = make_permissionChecker(context)
+      if not checkperm('Manage portal'):
+          raise Unauthorized
     """
     if checkperm is None:
-        if getAdapter is None:
-            if context is None:
-                raise ValueError('At least the context is needed!')
-            getAdapter = context.getAdapter
-        checkperm = getAdapter('checkperm')
+        if getAdapter is not None:
+            try:  # traditional / deprecated usage:
+                checkperm = getAdapter('checkperm')
+            except:
+                pass
+    if checkperm is None:
+        if context is None:
+            raise ValueError('At least the context is needed!')
+        membership_tool = getToolByName(context, 'portal_membership')
+        _cp = membership_tool.checkPermission
+        def checkperm(permission, context=context):
+            return _cp(permission, context)
 
     if verbose:
         # bisher nur mit Modul-, nicht mit Funktions-/Methodeninformation:
         logger = getLogSupport(stack_limit=4)[0]
         log = logger.info
-        def cp_verbose(perm):
-            val = checkperm(perm)
-            log('checkperm(%(perm)r) --> %(val)r', locals())
+        def cp_verbose(permission):
+            val = checkperm(permission)
+            log('checkperm(%(permission)r) --> %(val)r', locals())
             return val
         return cp_verbose
     return checkperm
@@ -193,7 +293,7 @@ def make_userdetector(ids, splitter=None, getid=True, verbose=None):
     """
     if not ids:
         return gimme_False
-    elif isinstance(ids, basestring):
+    elif isinstance(ids, six_string_types):
         ids = ids.split(splitter)
         if not ids:
             return gimme_False
@@ -203,9 +303,9 @@ def make_userdetector(ids, splitter=None, getid=True, verbose=None):
                    and len(splitter) > 1
                    )
     if verbose:
-        print '*' * 79
-        print 'make_userdetector(%s)' % arginfo(sorted(IDS), getid=getid)
-        print '*' * 79
+        print('*' * 79)
+        print('make_userdetector(%s)' % arginfo(sorted(IDS), getid=getid))
+        print('*' * 79)
 
     def get_userid(**kwargs):
         x = kwargs.get('member_id', None)
@@ -217,10 +317,17 @@ def make_userdetector(ids, splitter=None, getid=True, verbose=None):
         auth = kwargs.get('auth')
         if auth is None:
             getAdapter = kwargs.get('getAdapter')
-            if getAdapter is None:  # Schluß mit lustig:
-                context = kwargs['context']
-                getAdapter = context.getAdapter
-            auth = getAdapter('auth')
+            if getAdapter is not None:  # olde / depretated usage:
+                try:
+                    auth = getAdapter('auth')
+                except:
+                    pass
+            if auth is None:
+                context = kwargs.get('context')
+                if context is None:
+                    raise ValueError('Please specify the context!')
+                membership_tool = getToolByName(context, 'portal_membership')
+                auth = membership_tool.getAuthenticatedMember
         member = auth()
         return member.getId()
 
@@ -269,30 +376,46 @@ def decorated_tool(context, toolname, limit_get_delta=0, limit=3):
 
     ci = caller_info(limit+limit_get_delta)
     logger.info('GET:  ' + ci)
-    print '*** ' + ci
-    print '*** getting tool %(toolname)r' % locals()
+    print('*** ' + ci)
+    print('*** getting tool %(toolname)r' % locals())
 
     tool = getToolByName(context, toolname)
     def decorated(*args, **kwargs):
         ci = caller_info()
         logger.info('CALL: ' + ci)
-        print '***' + ci + ':'
-        print asciibox((toolname+'(',) + args, kwargs=kwargs)
+        print('***' + ci + ':')
+        print(asciibox((toolname+'(',) + args, kwargs=kwargs))
         res = tool(*args, **kwargs)
-        print '...' + ci + '.'
+        print('...' + ci + '.')
         return res
 
     decorated.__doc__ = '%(toolname)s tool (decorated)' % locals()
     return decorated
 
-def message(context, message, messageType='info', mapping={}):
+def message(context, message, messageType='info', mapping=None):
     """
     Ersetzt den gleichnamigen Tomcom-Adapter
     """
     pu = getToolByName(context, 'plone_utils')
-    pu.addPortalMessage(pmf(unicode(message),
+    pu.addPortalMessage(pmf(safe_decode(message),
                             mapping=mapping),
                         messageType)
+
+def getMessenger(context, decode=safe_decode):
+    """
+    Return a 'message' function which doesn't require
+    (nor accept) a context argument
+    """
+    pu = getToolByName(context, 'plone_utils')
+    apm = pu.addPortalMessage
+    def message(message, messageType='info', mapping=None):
+        """
+        Ersetzt den gleichnamigen Tomcom-Adapter
+        """
+        apm(pmf(decode(message),
+                mapping=mapping),
+            messageType)
+    return message
 
 
 def getbrain(context, uid):
@@ -305,14 +428,40 @@ def getbrain(context, uid):
         return brains[0]
 
 
+def make_brainGetter(context):
+    """
+    Return a function which looks up a UID
+    and doesn't take a content argument;
+    use this for multiple searches
+    """
+    pc = getToolByName(context, 'portal_catalog')._catalog
+
+    def getbrain(uid):
+        brains = pc(UID=uid)
+        if brains:
+            return brains[0]
+    return getbrain
+
+
+def make_pathByUIDGetter(context):
+    """
+    Return a function which looks up a UID
+    and returns the path as stored in portal_catalog
+    """
+    pc = getToolByName(context, 'portal_catalog')._catalog
+    indexes = pc._catalog.indexes
+
+    def uid2path(uid):
+        return indexes['path']._unindex[indexes['UID']._index[uid]]
+            
+    return uid2path
+
+
 def make_timeformatter(context, **kwargs):
     util = getToolByName(context, 'translation_service')
     longFormat = kwargs.pop('longFormat', False)
     domain = kwargs.pop('domain', 'plonelocales')
-    if kwargs:
-        raise TypeError('Unsupported kwargs! (%(kwargs)r)'
-                        % locals())
-    assert not kwargs
+    check_kwargs(kwargs)  # raises TypeError if necessary
     default_context = context
     func = util.ulocalized_time
     default_request = context.REQUEST
@@ -333,3 +482,89 @@ def make_timeformatter(context, **kwargs):
                     request=request)
 
     return totime
+
+
+def getPath(context, sep='/'):
+    """
+    Return the complete path from the Zope root.
+
+    Without the sep option given, this is the same as the getPath mothod
+    of Products.ZCatalog.CatalogPathAwareness.CatalogAware.
+    """
+    return sep.join(context.getPhysicalPath())
+
+
+def parents(context):
+    """
+    Ersetzt den gleichnamigen Tomcom-Adapter
+    """
+    return context.REQUEST['PARENTS']
+
+
+def parent_brains(context, parent=None, reverse=False):
+    """
+    Return the parents (as catalogued), as a list of brains
+
+    parent -- the starting point (default: `context`)
+    reverse -- return a reverted list? (default: False)
+    """
+    liz = []
+    if not parent:
+        if context.portal_type == 'Plone Site':
+            return liz
+        uid = context.UID()
+        parent = getbrain(context, uid)
+
+    while parent and parent.UID:
+        liz.append(parent)
+        parent = parent.getParent()
+    if reverse:
+        liz.reverse()
+    return liz
+
+
+def get_parent(context, **kwargs):
+    """
+    Return the nearest principia-folderish parent.
+
+    Arguments:
+      context -- the starting point
+
+    Keyword-only:
+
+      _as -- 'object' (default) or 'path', so far
+
+      factory -- a function which takes an ancestor object
+    """
+    pop = kwargs.pop
+    _as = pop('_as', None)
+    func = pop('factory', None)
+    if _as is not None:
+        if func is not None:
+            raise TypeError('Please specify *either* _as (%(_as)r) '
+                            ' *or* factory (%(factory)r), '
+                            'but not both!'
+                            % locals())
+        if _as == 'path':
+            func = getPath
+        elif _as == 'object':
+            pass
+        else:
+            raise ValueError('Invalid _as spec %(_as)r'
+                             % locals())
+    check_kwargs(kwargs)  # raises TypeError if necessary
+    for ancestor in context.REQUEST['PARENTS']:
+        if getattr(ancestor, 'isPrincipiaFolderish', False):
+            if func is None:
+                return ancestor
+            return func(ancestor)
+
+
+def get_published_templateid(context):
+    """
+    Return the template id, as of the PUBLISHED variable, or None
+    """
+    request = context.REQUEST
+    if request.has_key('PUBLISHED'):
+        return request['PUBLISHED'].__name__
+    return None

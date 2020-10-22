@@ -3,25 +3,49 @@
 Tools für Formulare
 """
 
-__author__ = "Tobias Herp <tobias.herp@visaplan.com>"
+# Python compatibility:
+from __future__ import absolute_import, print_function
+
+from six import string_types as six_string_types
+from six import text_type as six_text_type
+from six.moves.urllib.parse import urlencode, urlsplit, urlunsplit
+
+# Setup tools:
+import pkg_resources
+
+try:
+    pkg_resources.get_distribution('visaplan.plone.infohubs')
+except pkg_resources.DistributionNotFound:
+    context_and_form_tuple = None
+    HAS_INFOHUBS = False
+else:
+    # visaplan:
+    from visaplan.plone.infohubs.hubs2 import context_and_form_tuple
+    HAS_INFOHUBS = True
 
 
-# Standardmodule
-from urlparse import urlsplit, urlunsplit
-from urllib import urlencode
+# Standard library:
 from cgi import parse_qsl
 from collections import defaultdict
-from string import strip
 from datetime import date
+from string import strip
 from time import strptime
 
-# Installierte Module:
-from bs4 import BeautifulSoup
+__author__ = "Tobias Herp <tobias.herp@visaplan.com>"
 
-# Unitracc-Tools
 try:
-    from visaplan.tools.lands0 import as_new_list
+    pkg_resources.get_distribution('beautifulsoup4')
+except pkg_resources.DistributionNotFound:
+    HAS_BEAUTIFULSOUP = False
+else:
+    HAS_BEAUTIFULSOUP = True
+    # 3rd party:
+    from bs4 import BeautifulSoup
+
+try:
+    # visaplan:
     from visaplan.plone.tools.functions import is_uid_shaped
+    from visaplan.tools.lands0 import as_new_list
 except ImportError:
     if __name__ == '__main__':
         print('Some tests will fail due to import problem')
@@ -34,7 +58,7 @@ except ImportError:
                 s = s.decode('ascii')
             except UnicodeDecodeError:
                 return False
-        elif isinstance(s, unicode):
+        elif isinstance(s, six_text_type):
             pass
         elif onerror == 'raise':
             raise ValueError('String expected: %(s)r'
@@ -45,7 +69,7 @@ except ImportError:
     def as_new_list(val, splitfunc=None):
         if val is None:
             return []
-        if not isinstance(val, basestring):
+        if not isinstance(val, six_string_types):
             return list(val)
         if splitfunc is None:
             return [s.strip() for s in val.split(',')]
@@ -55,10 +79,12 @@ except ImportError:
 # wenigstens die Tests, die weder MockRequest noch is_uid_shaped
 # benötigen)
 try:
+    # Local imports:
     from .mock import MockRequest
 except (ImportError, ValueError):
     if __name__ != '__main__':
         raise
+
 
 __all__ = ('tryagain_url',
            'back_to_referer',
@@ -177,7 +203,7 @@ def tryagain_url(request, varnames=None,  # ----- [ tryagain_url ... [
         val = form.get(name, None)
         # print 'tryagain_url: %(name)r, %(val)r' % locals()
         if val:
-            if isinstance(val, basestring):
+            if isinstance(val, six_string_types):
                 qsl.append((name, val.strip()))
             elif isinstance(val, (list, tuple)):
                 # done = False
@@ -631,7 +657,7 @@ def detect_duplicates(*args, **kwargs):
         assert 'varname' not in kwargs
         assert not args
 
-    if isinstance(values, basestring):
+    if isinstance(values, six_string_types):
         raise ValueError('Variable %(varname)s contains a string'
                          ' (sequence expected): %(values)r'
                          % locals())
@@ -773,7 +799,7 @@ def make_input(data, **kwargs):
                 tag = soup.new_tag('input')
                 tag.attrs = attr_dict(key, '')
                 res.append(str(tag))
-        elif isinstance(val, basestring):
+        elif isinstance(val, six_string_types):
             tag = soup.new_tag('input')
             tag.attrs = attr_dict(key, val)
             res.append(str(tag))
@@ -794,6 +820,48 @@ def make_input(data, **kwargs):
 # -------------------------------- ] ... nun in visaplan.tools.dicts ]
 
 
+def form_changes(hub=None, info=None, context=None, form=None, func=None):
+    """
+    Return a (form, changes, deletions) tuple, suitable as input for
+    visaplan.tools.dicts.update_dict.
+
+    A function to calculate necessary changes to form data;
+    the signature is tailored after the first example in the utils module of
+    visaplan.plone.industrialsector (see there); functions of this type are
+    aimed to establish a plugin structure for search forms.
+
+    Requires visaplan.plone.infohubs.
+
+    Options are:
+        hub, info -- as returned by visaplan.plone.infohubs.make_hubs
+                     (if you have them already);
+                     alternatively, you'll usually specify the context
+                     or -- e.g. after calling sibling functions which will
+                     return it -- the form.
+        context -- the usual context
+        form -- the form data dictionary, usually context.REQUEST.form
+                (modified in-place).
+        func -- a function (not used in this stub).
+                Might become removed in future versions, or perhaps replaced by
+                general support for *args and/or **kwargs.
+
+    This is a stub; `changes` will always be an empty dict,
+    `deletions` will always be an empty list:
+
+    >>> req = MockRequest(text='seekme')
+    >>> form_changes(form=req.form)
+    ({'text': 'seekme'}, {}, [])
+    """
+    if context_and_form_tuple is not None:
+        hub, info, context, form = context_and_form_tuple(hub, info, context, form,
+                                                          amend=True)
+    else:  # for better testability
+        assert form is not None
+    changes = {}
+    deletions = []
+    return (form, changes, deletions)
+
+
 if __name__ == '__main__':
     class MockRequest(dict):
         # kopiert ins mock-Modul
@@ -802,5 +870,6 @@ if __name__ == '__main__':
             self['ACTUAL_URL'] = kwargs.pop('actual_url', referer)
             self.form = kwargs
 
+    # Standard library:
     import doctest
     doctest.testmod()

@@ -3,34 +3,41 @@
 Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _tree
 """
 
-# Standardmodule
+# Python compatibility:
+from __future__ import absolute_import
+
+# Standard library:
 from posixpath import normpath
+
+# Zope:
+from Products.CMFCore.utils import getToolByName
+
+# Plone:
+from plone.uuid.interfaces import IUUID
+
+# Local imports:
+from ._args import (
+    _extract_move_args,
+    extract_layout_switch,
+    extract_menu_switch,
+    )
+from ._misc import _traversable_path
+from ._o_tools import (
+    handle_language,
+    handle_layout,
+    handle_menu,
+    handle_title,
+    make_notes_logger,
+    )
+from ._reindex import make_reindexer
+
+# Logging / Debugging:
+import logging
 
 # Exceptions:
 
-# Plone, sonstiges:
-from plone.uuid.interfaces import IUUID
-from Products.CMFCore.utils import getToolByName
 
-# Logging und Debugging:
-import logging
 
-# local imports from sister modules:
-from ._args import (
-        extract_menu_switch,
-        extract_layout_switch,
-        _extract_move_args,
-        )
-from ._misc import (
-        _traversable_path,
-        )
-from ._o_tools import (
-        handle_language,
-        handle_layout,
-        handle_menu,
-        handle_title,
-        make_notes_logger,
-        )
 
 __all__ = [
         'make_object_getter',
@@ -65,6 +72,7 @@ def make_object_getter(context, **kwargs):
     - set_title - set the title (if given and not matching)
     - set_uid - set the UUID (if given and not matching)
     - set_language - set the language (if given and not matching)
+    - set_canonical - link the canonical translation (if given)
     - reindex - True:  reindex in any case,
                 False: ... under no circumstances,
                 None:  ... if changes were made (default).
@@ -94,11 +102,28 @@ def make_object_getter(context, **kwargs):
         logger = pop('logger')
     elif verbose:
         logger = logging.getLogger('get_object')
-    reindex =      pop('reindex', None)
+    reindexer = kwargs.pop('reindexer', None)
+    idxs = kwargs.pop('idxs', None)
+    if reindexer is None and (set_menu is None or set_menu):
+        reindexer = make_reindexer(logger=logger,
+                                   context=parent,
+                                   idxs=idxs)
+    elif reindexer is not None and idxs is not None:
+        logger.warn('Ignoring idxs value %(idxs)r', locals())
+    reindex = kwargs.pop('reindex', reindexer is not None
+                                    or None)
+    if reindex and reindexer is None:
+        reindexer = make_reindexer(logger=logger,
+                                   context=parent)
     set_title =    pop('set_title', True)
     set_uid =      pop('set_uid', False)
     get_uid     =  pop('get_uid', None)
     set_language = pop('set_language', True)
+    set_canonical = pop('set_canonical', None)
+    if set_canonical is None:
+        set_canonical = set_language
+    set_subportal = pop('set_subportal', None)
+    subportal     = pop('subportal', None)
     return_tuple = pop('return_tuple', False)
 
     def _err(msg, notes, logger=logger):
@@ -116,10 +141,14 @@ def make_object_getter(context, **kwargs):
             info=None,  # specify an empty dict to get information!
             parent=parent,
             reindex=reindex,
+            reindexer=reindexer,
             set_title=set_title,
             set_uid=set_uid,
             get_uid=get_uid,
             set_language=set_language,
+            set_canonical=set_canonical,
+            set_subportal=set_subportal,
+            subportal=subportal,
             return_tuple=return_tuple,
             **kwargs):
         """
@@ -234,7 +263,7 @@ def make_object_getter(context, **kwargs):
             lognotes(tup)
 
         # ---------- [set_]language, [set_]canonical:
-        kwargs.update(set_language=set_language)
+        kwargs.update(set_language=set_language, set_canonical=set_canonical)
         ch, notes = handle_language(o, kwargs, created=False)
         changes += ch
         for tup in notes:
@@ -268,7 +297,10 @@ def make_object_getter(context, **kwargs):
                       notes)
             return ((o, info) if return_tuple
                     else o)
-        o.reindexObject()
+        if reindexer is None:
+            o.reindexObject()
+        else:
+            reindexer(o)
         info['reindexed'] = True
         return ((o, info) if return_tuple
                 else o)

@@ -2,15 +2,120 @@ Changelog
 =========
 
 
-1.2 (unreleased)
-----------------
+
+2.0.0 (unreleased)
+------------------
 
 - Breaking changes:
 
   - ``forms.tryagain_url``:
 
-    - all options (which are all arguments except the request) will `need to` be given by name
+    - all options (which are all arguments except the request)
+      will `need to` be given by name
       (which is possible and `recommended already`).
+
+
+1.3.0 (unreleased)
+------------------
+
+New Features:
+
+- New module ``groups``
+
+- New `.context` functions
+
+  - `getMessenger` (factory):
+
+    creates a `message` function which doesn't require
+    (nor accept) a `context` argument
+
+  - `getPath`
+  - `get_parent`
+  - `parents`
+  - `parent_brains`
+  - `make_brainGetter`
+  - `make_pathByUIDGetter`
+  - `make_translator`
+  - `get_published_templateid`
+  - `getSupportedLanguageTuples`
+
+- New function ``setup.safe_context_id``
+
+- New function ``search.normalizeQueryString`` (unicode, asterisks)
+
+Improvements:
+
+- ``setup`` module:
+
+  - If the ``reindex`` function, which was created by the ``make_reindexer`` factory,
+    was given an object both by `brain` and by itself, it compared those two by identity,
+    which wouldn't ever match.  Now checking for equality.
+
+  - New function ``clone_tree`` (from release 1.2.0) now works recursively
+
+  - When ``clone_tree`` moves objects from one folder to another, it tries to preserve a useful order;
+    both functions ``_clone_tree_inner`` and ``_move_objects`` use the new helper ``apply_move_order_options``
+    to inject a ``sort_on`` key into the query.
+
+- ``context`` module:
+
+  - ``message`` function (non-generated; with `context` argument):
+
+    The default `mapping` is `None` now.
+
+  - `make_permissionChecker` doesn't require the ``checkperm``
+    adapter any more to be useful
+
+  - `make_userdetector` doesn't require the ``auth``
+    adapter any more to be useful
+
+- Working doctests for ``search`` module
+
+- ``zcmlgen`` module:
+
+  - "Constructors" of the generator classes support an optional `skip` argument
+    (keyword-only)
+
+Hard dependencies removed:
+
+- Products.Archetypes_
+
+  if it is not installed, parts of the `.attools` module simply won't work
+
+- visaplan.kitchen_
+
+- visaplan.plone.infohubs_
+
+  If not installed, `.forms.form_changes` *requires* a `form` argument
+  (but it is a stub anyway).
+
+[tobiasherp]
+
+
+1.2.0 (2020-05-13)
+------------------
+
+New utilities:
+
+- ``setup`` module:
+
+  - New function ``clone_tree``, using
+  - function factory ``make_object_getter``
+    and
+  - function factory ``make_subfolder_creator``
+
+  Both factories have overlapping functionality and might become unified in a future version;
+  their initial purposes were:
+
+  ``make_object_getter`` creates a function (usually called ``get_object``)
+  which tries to *find* a (possibly moved and/or renamed) object,
+  and then is able to apply a few changes;
+
+  ``make_subfolder_creator`` creates a function (usually called ``new_folder``)
+  which creates a new *folder* (unless already present),
+  and then is able to apply a few changes.
+
+[tobiasherp]
 
 
 1.1.6 (2019-11-27)
@@ -174,6 +279,8 @@ Bugfixes:
 - Initial release.
   [tobiasherp]
 
+.. _Products.Archetypes: https://pypi.org/project/Products.Archetypes
 .. _simplejson: https://pypi.org/project/simplejson
 .. _visaplan.kitchen: https://pypi.org/project/visaplan.kitchen
+.. _visaplan.plone.infohubs: https://pypi.org/project/visaplan.plone.infohubs
 .. _visaplan.tools: https://pypi.org/project/visaplan.tools

@@ -3,7 +3,11 @@
 Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _rename
 """
 
+# Python compatibility:
 # Plone, sonstiges:
+from __future__ import absolute_import
+
+# Zope:
 from Products.CMFCore.utils import getToolByName
 
 __all__ = [
@@ -174,7 +178,7 @@ def make_renamer(**kwargs):
                     #if brain is not None:
                     #    oldpath = brain.getPath
                     #else:
-                    #    oldpath = o.getPath()
+                    #    oldpath = '/'.join(o.getPhysicalPath())
                     parent = o.aq_parent
                     logger.info('%(spec)s: renaming'
                                 ' from %(current_id)r to %(newid)r.',

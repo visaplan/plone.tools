@@ -22,10 +22,14 @@ ACHTUNG - Der Defaultwert für get_debug_active muß ein String sein; z. B.:
 
 """
 
+# Python compatibility:
+from __future__ import absolute_import
+
 __all__ = ['get_debug_active',
            'get_raw_config',
            ]
 
+# visaplan:
 from visaplan.tools.minifuncs import makeBool
 
 

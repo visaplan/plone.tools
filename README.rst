@@ -2,18 +2,22 @@
    If you want to learn more about writing documentation, please check out: http://docs.plone.org/about/documentation_styleguide.html
    This text does not appear on pypi or github. It is a comment.
 
+.. image::
+   https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
+       :target: https://pycqa.github.io/isort/
+
 ====================
 visaplan.plone.tools
 ====================
 
-General tools modules for Plone.
+General tools modules for Plone_.
 
 We don't claim ultimate Plone wisdom (yet);
 this package is one of the parts a big monolithic classic Zope product
 was split into.
 
 It is part of the footing of the "Unitracc family" of Plone sites
-which are maintained by visaplan GmbH, Bochum, Germany.
+which are maintained by `visaplan GmbH`_, Bochum, Germany.
 
 Some modules of this package might still contain some resources
 (e.g. type names)
@@ -154,6 +158,8 @@ The project is licensed under the GPLv2.
 
 .. _`issue tracker`: https://github.com/visaplan/plone.tools/issues
 .. _JSON: https://json.org/
+.. _Plone: https://plone.org/
 .. _simplejson: https://pypi.org/project/simplejson
+.. _`visaplan GmbH`: http://visaplan.com
 
 .. vim: tw=79 cc=+1 sw=4 sts=4 si et

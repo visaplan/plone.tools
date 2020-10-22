@@ -3,6 +3,12 @@
 Tools for "brains"
 """
 
+# Python compatibility:
+from __future__ import absolute_import
+
+from six import string_types as six_string_types
+from six.moves import map
+
 __author__ = "Tobias Herp <tobias.herp@visaplan.com>"
 VERSION = (0,
            6,  # aufgeräumt
@@ -10,10 +16,10 @@ VERSION = (0,
 __version__ = '.'.join(map(str, VERSION))
 
 
-# Standardmodule
+# Standard library:
 from collections import defaultdict
 
-# Unitracc-Restrukturierung
+# visaplan:
 from visaplan.tools.minifuncs import NoneOrString
 
 __all__ = [
@@ -97,7 +103,7 @@ def make_collector(use, all=None, any=None, separator=" ", empty=None):
         >>> make_set(['getFirstname', 'getLastname'])
         set(['getFirstname', 'getLastname'])
         """
-        if isinstance(sos, basestring):
+        if isinstance(sos, six_string_types):
             return set([sos])
         else:
             return set(sos)
@@ -139,7 +145,7 @@ def make_collector(use, all=None, any=None, separator=" ", empty=None):
         res = []
         allnames = dir(o)
         for key in use:
-            if o.has_key(key):
+            if key in o:
                 val = getattr(o, key, None)
                 if val:
                     res.append(val)
@@ -267,5 +273,6 @@ def make_collector(use, all=None, any=None, separator=" ", empty=None):
 
 
 if __name__ == '__main__':
+    # Standard library:
     import doctest
     doctest.testmod()

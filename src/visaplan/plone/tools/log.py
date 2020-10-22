@@ -5,23 +5,34 @@ visaplan.plone.tools.log - Helferlein für Entwicklung und Debugging
 Autor: Tobias Herp
 """
 
-# Standardmodule:
-import logging
-from os import linesep, getpid
-from fcntl import lockf, LOCK_EX, LOCK_UN
-from time import strftime
+# Python compatibility:
+from __future__ import absolute_import
+
+from six import string_types as six_string_types
+from six.moves import map
+
+# Standard library:
 from contextlib import contextmanager
+from fcntl import LOCK_EX, LOCK_UN, lockf
 from functools import wraps
+from os import getpid, linesep
 from pprint import pformat
+from time import strftime
 
-# Plone/Zope:
-from Globals import DevelopmentMode
+try:
+    # Zope:
+    from Globals import DevelopmentMode
+except ImportError:
+    # Hotfix for Zope 4; how to properly replace this?
+    DevelopmentMode = False
 
-# Unitracc-Tools:
+# visaplan:
 from visaplan.plone.tools.cfg import get_debug_active, split_filename
 from visaplan.tools.coding import safe_decode, safe_encode
-from visaplan.tools.debug import arginfo, pretty_funcname
 
+# Logging / Debugging:
+import logging
+from visaplan.tools.debug import arginfo, pretty_funcname
 
 __all__ = ['getLogSupport',
            'make_textlogger',
@@ -146,7 +157,7 @@ def make_textlogger(fn, sorting_filter=None, divide=None, lock=None,
         Eingabeargumente werden mit safe_decode zu Unicode decodiert.
         """
         items = sorting_filter(kwargs)
-        maxl = max(map(len, [t[0] for t in items])) + 2
+        maxl = max(list(map(len, [t[0] for t in items]))) + 2
         mask = PROTOMASK % maxl
         liz = [u'']
         if divide is not None:
@@ -154,7 +165,7 @@ def make_textlogger(fn, sorting_filter=None, divide=None, lock=None,
         liz.append( strftime(time_format)+safe_decode(txt)+u':')
         liz_u = []
         for key, val in items:
-            if isinstance(val, basestring):
+            if isinstance(val, six_string_types):
                 liz_u.append((safe_decode(key)+u':', safe_decode(val)))
             else:
                 liz_u.append((safe_decode(key)+u':', val))
@@ -212,5 +223,6 @@ def make_textlogger(fn, sorting_filter=None, divide=None, lock=None,
 
 
 if __name__ == '__main__':
+    # Standard library:
     import doctest
     doctest.testmod()

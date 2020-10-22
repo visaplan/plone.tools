@@ -3,6 +3,9 @@
 Tools für Produkt-Setup (Migrationsschritte, "upgrade steps")
 """
 
+# Python compatibility:
+from __future__ import absolute_import
+
 __all__ = [
         ## _args (Helferlein für **kwargs):
         'extract_object_and_brain', # --> (o, brain)
@@ -47,51 +50,33 @@ __all__ = [
         'make_watcher_function',  # --> Signatur f(brain, string)
         ## _workflow:
         'make_transition_applicator',
+        ## created by factory:
+        'safe_context_id',
         ]
+# visaplan:
+from visaplan.tools.lands0 import make_default_prefixer
+
+# Local imports:
 from ._args import (
-        extract_object_and_brain, extract_object_or_brain,
-        extract_brain_or_object,
-        )
-from ._attr import (
-        make_attribute_setter,
-        )
-from ._decorator import (
-        step, StepAborted,
-        )
-from ._get_object import (
-        make_object_getter,
-        )
-from ._make_folder import (
-        make_subfolder_creator,
-        )
-from ._query import (
-        make_query_extractor, iterate_query,
-        getAllLanguages,
-        )
-from ._reindex import (
-        make_reindexer, reindex_all,
-        )
-from ._rename import (
-        make_renamer, ACCEPT_ANY,
-        )
-from ._roles import (
-        make_simple_localroles_function, set_local_roles,
-        )
-from ._switch import (
-        switch_menu_item, show_item, hide_item,
-        )
-from ._tree import (
-        clone_tree,
-        )
-from ._types import (
-        setVersionedTypes,
-        )
-from ._uid import (
-        make_distinct_finder, make_uid_setter, make_uid_collector,
-        )
-from ._watch import (
-        make_watcher_function,
-        )
-from ._workflow import (
-        make_transition_applicator,  # TODO: transitions_map argument!
-        )
+    extract_brain_or_object,
+    extract_object_and_brain,
+    extract_object_or_brain,
+    )
+from ._attr import make_attribute_setter
+from ._decorator import StepAborted, step
+from ._get_object import make_object_getter
+from ._make_folder import make_subfolder_creator
+from ._query import getAllLanguages, iterate_query, make_query_extractor
+from ._reindex import make_reindexer, reindex_all
+from ._rename import ACCEPT_ANY, make_renamer
+from ._roles import make_simple_localroles_function, set_local_roles
+from ._switch import hide_item, show_item, switch_menu_item
+from ._tree import clone_tree
+from ._types import setVersionedTypes
+from ._uid import make_distinct_finder, make_uid_collector, make_uid_setter
+from ._watch import make_watcher_function
+from ._workflow import \
+    make_transition_applicator  # TODO: transitions_map argument!
+
+safe_context_id = make_default_prefixer('profile-',
+                                        ['snapshot-'])

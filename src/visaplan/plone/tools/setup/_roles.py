@@ -3,12 +3,18 @@
 Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _roles
 """
 
+# Python compatibility:
 # Unitracc-Tools:
+from __future__ import absolute_import
+
+from six import string_types as six_string_types
+
+# visaplan:
 from visaplan.tools.classes import Proxy
 
-from ._args import (
-        extract_object_and_brain, 
-        )
+# Local imports:
+from ._args import extract_object_and_brain
+
 __all__ = [
         'make_simple_localroles_function',
         'set_local_roles',
@@ -27,7 +33,7 @@ def make_simple_localroles_function(**kwargs):
     userid = kwargs.pop('userid')
     roles = kwargs.pop('roles')
     add = kwargs.pop('add', True)
-    if isinstance(roles, basestring):
+    if isinstance(roles, six_string_types):
         roles = [roles]
     def new_local_roles(brain, target_state):
         if target_state == for_target_state:
@@ -88,7 +94,7 @@ def set_local_roles(**kwargs):
     changed_users = set()
     for tup in thelist:
         userid, roles = tup[:2]
-        if isinstance(roles, basestring):
+        if isinstance(roles, six_string_types):
             roles = [roles]
         if tup[2:]:
             tail = tup[3:]

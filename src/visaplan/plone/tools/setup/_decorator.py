@@ -18,9 +18,14 @@ Common functionality of the decorators provided by this module:
   this point) and re-raised.
 """
 
-# Standardmodule
+# Python compatibility:
+from __future__ import absolute_import
+
+# Standard library:
 from functools import wraps
 from time import time
+
+# Logging / Debugging:
 import logging
 
 __all__ = [

@@ -1,16 +1,37 @@
 # -*- coding: utf-8 -*- vim: ts=8 sts=4 sw=4 si et tw=79
 """\
 attools - Archetype tools
+
+Products.Archetypes should be installed to use this module;
+otherwise, some functions will fail
 """
+
+# Python compatibility:
+from __future__ import absolute_import, print_function
+
+from six import string_types as six_string_types
+
+# Setup tools:
+import pkg_resources
 
 __author__ = "Tobias Herp <tobias.herp@visaplan.com>"
 
+# Standard library:
 from collections import defaultdict
 
-from zope import event
-from Products.Archetypes.event import ObjectEditedEvent
-from Products.Archetypes.utils import mapply, shasattr
+try:
+    pkg_resources.get_distribution('Products.Archetypes')
+except pkg_resources.DistributionNotFound:
+    HAS_ARCHETYPES = False
+else:
+    HAS_ARCHETYPES = True
+    # Zope:
+    from Products.Archetypes.event import ObjectEditedEvent
+    from Products.Archetypes.utils import mapply, shasattr
+    from zope import event
 
+# visaplan:
+# visaplan:
 from visaplan.tools.lands0 import makeSet
 
 
@@ -127,10 +148,10 @@ def make_minilogger(verbose, logger, prefix=None):
             if prefix:
                 MASK = prefix.replace('%', '%%') + ': %s'
                 def _tell(s, *args):
-                    print MASK % (s % make_mapping(*args))
+                    print(MASK % (s % make_mapping(*args)))
             else:
                 def _tell(s, *args):
-                    print s % make_mapping(*args)
+                    print(s % make_mapping(*args))
         else:
             _tell = logger.info
         def tell(level, s, *args):
@@ -162,7 +183,7 @@ def make_skip_function(tell, **kwargs):
     blacklist = kwargs.pop('blacklist', None)
     if whitelist is not None:
         assert blacklist is None
-        if isinstance(whitelist, basestring):
+        if isinstance(whitelist, six_string_types):
             whitelist = [whitelist]
         whitelist = set(whitelist)
         def skip(fieldname):
@@ -173,7 +194,7 @@ def make_skip_function(tell, **kwargs):
     else:
         if blacklist is None:
             blacklist = []
-        elif isinstance(blacklist, basestring):
+        elif isinstance(blacklist, six_string_types):
             blacklist = [blacklist]
         blacklist = set(blacklist)
         blacklist.update(DEFAULT_BLACKLIST)
@@ -233,7 +254,7 @@ def make_mimetype_fixer(**kwargs):
     from_mimetype = kwargs.pop('from_mimetype', None)
     if from_mimetype is None:
         from_mimetypes = None
-    elif isinstance(from_mimetype, basestring):
+    elif isinstance(from_mimetype, six_string_types):
         from_mimetypes.append(from_mimetype)
     else:
         from_mimetypes.extend(list(from_mimetype))

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*- vim: et ts=8 sw=4 sts=4 si tw=79 cc=+1
 """Installer for the visaplan.plone.tools package."""
-from __future__ import absolute_import
-from __future__ import print_function
+# Python compatibility:
+from __future__ import absolute_import, print_function
 
-from setuptools import find_packages
-from setuptools import setup
+# Setup tools:
+from setuptools import find_packages, setup
+
+# Standard library:
 from os.path import isfile
 
 package_name = 'visaplan.plone.tools'
@@ -164,10 +166,11 @@ setup_kwargs = dict(
     zip_safe=False,
     install_requires=[
         'setuptools',
-        'visaplan.tools',
+        'six',
         'Products.CMFCore', # getToolByName
         # -*- Extra requirements: -*-
-        'visaplan.kitchen',
+        'visaplan.tools >= 1.3.1.dev1',  # make_default_prefixer
+        # 'visaplan.plone.infohubs >=1.1.1.dev1',  # .hubs2 module
         # ... further requirements removed
     ],
     extras_require={

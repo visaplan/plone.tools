@@ -31,32 +31,42 @@ vorgesehenen Funktionen
 - visaplan.tools.lands0.makeListOfStrings
 """
 
+# Python compatibility:
+from __future__ import absolute_import, print_function
+
+from six import string_types as six_string_types
+from six.moves import map
+
 __all__ = ['get_debug_active',
            'get_raw_config',
            'get_config',
            'split_filename',
            ]
 
-# Standardmodule:
-from os.path import normpath, sep, splitext
+# Standard library:
 from collections import defaultdict
+from os.path import normpath, sep, splitext
 from traceback import extract_stack
+
+# Logging / Debugging:
 from logging import getLogger
 
 logger = getLogger('visaplan.plone.tools')
 
 # for convenience/development:
 try:
-    # Plone/Zope:
+    # Zope:
     from App.config import getConfiguration
-    # Unitracc-Tools:
-    from visaplan.tools.minifuncs import makeBool, NoneOrString
+
+    # visaplan:
+    from visaplan.tools.minifuncs import NoneOrString, makeBool
 except ImportError:
     if __name__ != '__main__':
         raise
 
-# Unitracc-Tools:
-from visaplan.tools.minifuncs import makeBool, NoneOrString
+# visaplan:
+from visaplan.tools.minifuncs import NoneOrString, makeBool
+
 
 def get_debug_active(product, default=None):
     """
@@ -163,7 +173,7 @@ def get_config(**kwargs):
     done_keys = set()
     for key, val in dic.items():
         done_keys.add(key)
-        if isinstance(val, basestring):
+        if isinstance(val, six_string_types):
             dic[key] = factories[key](val)
     fact_keys.difference_update(done_keys)
     for key in fact_keys:
@@ -270,7 +280,7 @@ def split_filename(fn, name=None,
                     ':'.join(lst2[pi+1:] + [_fn_base]),
                     )
         except ValueError as e:
-            print(str(e))
+            print((str(e)))
             return '?'.join(lst2)
             raise ValueError('Unsupported filename: %(fn)r' % locals())
     if prefix is None:
@@ -324,7 +334,7 @@ def _pkg_and_submodule(pkg, tail):
     >>> _pkg_and_submodule(['visaplan', 'tools'], ['visaplan', 'tools', '__init__.py'])
     ('visaplan.tools', None)
     """
-    if isinstance(pkg, basestring):
+    if isinstance(pkg, six_string_types):
         pkg_as_list = pkg.split('.')
     else:
         pkg_as_list, pkg = pkg, '.'.join(pkg)
@@ -370,7 +380,7 @@ def split_srcfilename(fn):
     Der folgende Aufruf zeitigt noch nicht das gewünschte Ergebnis:
     >-> split_srcfilename('.../src/Products.unitracc/src/Products/unitracc/browser/viewpreview/utils.pyc')
     """
-    if isinstance(fn, basestring):
+    if isinstance(fn, six_string_types):
         fn_list = fn.split(sep)
     else:
         fn_list = list(fn)
@@ -412,5 +422,6 @@ def split_srcfilename(fn):
 
 
 if __name__ == '__main__':
+    # Standard library:
     import doctest
     doctest.testmod()

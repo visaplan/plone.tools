@@ -4,7 +4,13 @@ Methoden zum Erzeugen von Indexfeldern;
 etwas weniger "prominent" als die Funktionen aus .context
 """
 
+# Python compatibility:
+from __future__ import absolute_import
+
+# Plone:
 from plone.i18n.normalizer.base import mapUnicode
+
+# visaplan:
 from visaplan.tools.coding import safe_decode
 
 mapping = {
@@ -39,5 +45,6 @@ if __name__ == '__main__':
         def Title(self):
             return self.title
 
+    # Standard library:
     import doctest
     doctest.testmod()

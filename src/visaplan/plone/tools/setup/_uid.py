@@ -3,15 +3,32 @@
 Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _uid
 """
 
-# Plone, sonstiges:
+# Python compatibility:
+from __future__ import absolute_import
+
+from six import string_types as six_string_types
+from six import text_type as six_text_type
+
+# Setup tools:
+import pkg_resources
+
+# Zope:
 from Products.CMFCore.utils import getToolByName
 
-# Unitracc-Tools:
-from visaplan.kitchen.spoons import generate_uids
-from visaplan.tools.debug import pp
+try:
+    pkg_resources.get_distribution('visaplan.kitchen')
+except pkg_resources.DistributionNotFound:
+    HAS_KITCHEN = False
+    generate_uids = None
+else:
+    HAS_KITCHEN = True
+    # visaplan:
+    from visaplan.kitchen.spoons import generate_uids
 
-# Logging und Debugging:
+# Logging / Debugging:
+# Logging / Debugging:
 from pdb import set_trace
+from visaplan.tools.debug import pp
 
 __all__ = [
         'make_distinct_finder',
@@ -110,7 +127,7 @@ def make_uid_setter(**kwargs):
                         geprüft, ob die anderen ebenfalls da sind, und dies
                         ggf. protokolliert
         """
-        if isinstance(path, basestring):
+        if isinstance(path, six_string_types):
             paths = [path]
         elif path:
             paths = tuple(path)
@@ -188,7 +205,7 @@ def make_uid_collector(getbyuid, transform, extract=generate_uids,
 
     getbyuid - eine Funktion, die für eine gegebene UID das jeweilige
                Katalogobjekt zurückgibt
-    extract - eine Funktion, die aus dem (ggf. durch die tranform-Funktion
+    extract - eine Funktion, die aus dem (ggf. durch die transform-Funktion
               ergänzten) Text die UIDs erzeugt
     transform - eine Transformationsfunktion, die den "rohen" Text expandiert
                 und Einbettungen von Ressourcen auswertet
@@ -216,6 +233,9 @@ def make_uid_collector(getbyuid, transform, extract=generate_uids,
 
     if expect != 'brain':
         raise ValueError('expect=%(expect)r not implemented!' % locals())
+    
+    if extract is None:
+        raise ValueError('No extract function given!')
 
     def collect_uids(brain):
         """
@@ -236,7 +256,7 @@ def make_uid_collector(getbyuid, transform, extract=generate_uids,
         elif transform is None:
             pass
         else:
-            if isinstance(text, unicode):
+            if isinstance(text, six_text_type):
                 space = u' '
             else:
                 space = ' '
@@ -275,7 +295,7 @@ def make_uid_collector(getbyuid, transform, extract=generate_uids,
         elif transform is None:
             pass
         else:
-            if isinstance(text, unicode):
+            if isinstance(text, six_text_type):
                 space = u' '
             else:
                 space = ' '
