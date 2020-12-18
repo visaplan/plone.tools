@@ -16,20 +16,26 @@ from Products.CMFCore.utils import getToolByName
 from plone.uuid.interfaces import IUUID
 
 # Local imports:
-from ._args import (
+from visaplan.plone.tools._have import HAS_SUBPORTALS
+from visaplan.plone.tools.setup._args import (
     _extract_move_args,
     extract_layout_switch,
     extract_menu_switch,
     )
-from ._misc import _traversable_path
-from ._o_tools import (
+from visaplan.plone.tools.setup._misc import _traversable_path
+from visaplan.plone.tools.setup._o_tools import (
     handle_language,
     handle_layout,
     handle_menu,
     handle_title,
     make_notes_logger,
     )
-from ._reindex import make_reindexer
+
+if HAS_SUBPORTALS:
+    from visaplan.plone.tools.setup._o_tools import handle_subportal
+
+# Local imports:
+from visaplan.plone.tools.setup._reindex import make_reindexer
 
 # Logging / Debugging:
 import logging
@@ -281,6 +287,14 @@ def make_object_getter(context, **kwargs):
         changes += ch
         for tup in notes:
             lognotes(tup)
+
+        if HAS_SUBPORTALS:
+            # ---------- [set_]subportal:
+            kwargs.update(subportal=subportal, set_subportal=set_subportal)
+            ch, notes = handle_subportal(o, kwargs, created=False)
+            changes += ch
+            for tup in notes:
+                lognotes(tup)
 
         info['changes'] = changes
         if reindex is None:

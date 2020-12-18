@@ -15,7 +15,7 @@ Changelog
       (which is possible and `recommended already`).
 
 
-1.3.0 (unreleased)
+1.3.0 (2020-12-16)
 ------------------
 
 New Features:
@@ -42,6 +42,28 @@ New Features:
 - New function ``setup.safe_context_id``
 
 - New function ``search.normalizeQueryString`` (unicode, asterisks)
+
+- `POSKeyError` rescue facility, *for now* provided here:
+
+  Inspired by the  five.grok_-based ``@@fix-blobs`` view by Mikko Ohtamaa,
+  we have two views:
+
+  - ``@@check-blobs`` scans the site object tree for
+    (Archetypes or Dexterity) objects with broken BLOB attachments
+    (images or files) and shows them in an HTML list with checkboxes;
+
+  - ``@@check-blobs-delete-selected`` allows to delete the objects
+    found be be affected.
+
+  *Note:* this functionality will likely be moved to a dedicated add-on package;
+  don't rely on it to exist in *any* other release of this package!
+
+- Optional functionality, depending on
+
+  - visaplan.plone.search v1.2.1+
+  - visaplan.plone.subportals
+
+  (both currently not yet on PyPI)
 
 Improvements:
 
@@ -279,6 +301,7 @@ Bugfixes:
 - Initial release.
   [tobiasherp]
 
+.. _five.grok: https://pypi.org/project/five.grok
 .. _Products.Archetypes: https://pypi.org/project/Products.Archetypes
 .. _simplejson: https://pypi.org/project/simplejson
 .. _visaplan.kitchen: https://pypi.org/project/visaplan.kitchen

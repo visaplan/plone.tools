@@ -57,25 +57,40 @@ __all__ = [
 from visaplan.tools.lands0 import make_default_prefixer
 
 # Local imports:
-from ._args import (
+from visaplan.plone.tools.setup._args import (
     extract_brain_or_object,
     extract_object_and_brain,
     extract_object_or_brain,
     )
-from ._attr import make_attribute_setter
-from ._decorator import StepAborted, step
-from ._get_object import make_object_getter
-from ._make_folder import make_subfolder_creator
-from ._query import getAllLanguages, iterate_query, make_query_extractor
-from ._reindex import make_reindexer, reindex_all
-from ._rename import ACCEPT_ANY, make_renamer
-from ._roles import make_simple_localroles_function, set_local_roles
-from ._switch import hide_item, show_item, switch_menu_item
-from ._tree import clone_tree
-from ._types import setVersionedTypes
-from ._uid import make_distinct_finder, make_uid_collector, make_uid_setter
-from ._watch import make_watcher_function
-from ._workflow import \
+from visaplan.plone.tools.setup._attr import make_attribute_setter
+from visaplan.plone.tools.setup._decorator import StepAborted, step
+from visaplan.plone.tools.setup._get_object import make_object_getter
+from visaplan.plone.tools.setup._make_folder import make_subfolder_creator
+from visaplan.plone.tools.setup._query import (
+    getAllLanguages,
+    iterate_query,
+    make_query_extractor,
+    )
+from visaplan.plone.tools.setup._reindex import make_reindexer, reindex_all
+from visaplan.plone.tools.setup._rename import ACCEPT_ANY, make_renamer
+from visaplan.plone.tools.setup._roles import (
+    make_simple_localroles_function,
+    set_local_roles,
+    )
+from visaplan.plone.tools.setup._switch import (
+    hide_item,
+    show_item,
+    switch_menu_item,
+    )
+from visaplan.plone.tools.setup._tree import clone_tree
+from visaplan.plone.tools.setup._types import setVersionedTypes
+from visaplan.plone.tools.setup._uid import (
+    make_distinct_finder,
+    make_uid_collector,
+    make_uid_setter,
+    )
+from visaplan.plone.tools.setup._watch import make_watcher_function
+from visaplan.plone.tools.setup._workflow import \
     make_transition_applicator  # TODO: transitions_map argument!
 
 safe_context_id = make_default_prefixer('profile-',

@@ -44,8 +44,10 @@ else:
 
 try:
     # visaplan:
-    from visaplan.plone.tools.functions import is_uid_shaped
     from visaplan.tools.lands0 import as_new_list
+
+    # Local imports:
+    from visaplan.plone.tools.functions import is_uid_shaped
 except ImportError:
     if __name__ == '__main__':
         print('Some tests will fail due to import problem')

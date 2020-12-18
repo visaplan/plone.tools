@@ -14,20 +14,20 @@ from string import capitalize
 from Products.CMFCore.utils import getToolByName
 
 # Local imports:
-from ._args import (
+from visaplan.plone.tools.setup._args import (
     _extract_move_args,
     extract_layout_switch,
     extract_menu_switch,
     )
-from ._misc import _traversable_path, make_title
-from ._o_tools import (
+from visaplan.plone.tools.setup._misc import _traversable_path, make_title
+from visaplan.plone.tools.setup._o_tools import (
     handle_language,
     handle_layout,
     handle_menu,
     handle_title,
     make_notes_logger,
     )
-from ._reindex import make_reindexer
+from visaplan.plone.tools.setup._reindex import make_reindexer
 
 # Logging / Debugging:
 import logging

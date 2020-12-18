@@ -19,8 +19,8 @@ from Products.CMFCore.WorkflowCore import WorkflowException
 from visaplan.tools.classes import DictOfSets
 
 # Local imports:
-from ._roles import set_local_roles
-from ._watch import make_watcher_function
+from visaplan.plone.tools.setup._roles import set_local_roles
+from visaplan.plone.tools.setup._watch import make_watcher_function
 
 # Logging / Debugging:
 import logging

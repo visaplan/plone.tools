@@ -13,7 +13,7 @@ from six import string_types as six_string_types
 from visaplan.tools.classes import Proxy
 
 # Local imports:
-from ._args import extract_object_and_brain
+from visaplan.plone.tools.setup._args import extract_object_and_brain
 
 __all__ = [
         'make_simple_localroles_function',

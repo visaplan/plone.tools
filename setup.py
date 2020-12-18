@@ -169,7 +169,7 @@ setup_kwargs = dict(
         'six',
         'Products.CMFCore', # getToolByName
         # -*- Extra requirements: -*-
-        'visaplan.tools >= 1.3.1.dev1',  # make_default_prefixer
+        'visaplan.tools >=1.3.1',  # list_of_strings improved
         # 'visaplan.plone.infohubs >=1.1.1.dev1',  # .hubs2 module
         # ... further requirements removed
     ],

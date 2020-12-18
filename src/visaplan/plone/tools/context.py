@@ -19,6 +19,8 @@ from traceback import extract_stack
 
 # Zope:
 from Products.CMFCore.utils import getToolByName
+
+# Plone:
 from Products.CMFPlone import PloneMessageFactory as pmf
 
 # visaplan:
@@ -449,7 +451,7 @@ def make_pathByUIDGetter(context):
     and returns the path as stored in portal_catalog
     """
     pc = getToolByName(context, 'portal_catalog')._catalog
-    indexes = pc._catalog.indexes
+    indexes = pc.indexes
 
     def uid2path(uid):
         return indexes['path']._unindex[indexes['UID']._index[uid]]

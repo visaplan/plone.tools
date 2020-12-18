@@ -19,13 +19,16 @@ from pprint import pprint
 from Products.CMFCore.utils import getToolByName
 
 # Local imports:
-from ._args import (
+from visaplan.plone.tools._have import HAS_SUBPORTALS, HAS_VPSEARCH
+from visaplan.plone.tools.setup._args import (
     _extract_move_args,
     extract_layout_switch,
     extract_menu_switch,
     )
-from ._exc import AlreadyTranslated  # from LinguaPlone, or a dummy
-from ._exc import CantAddTranslationReference  # ... enhanced information
+from visaplan.plone.tools.setup._exc import \
+    AlreadyTranslated  # from LinguaPlone, or a dummy
+from visaplan.plone.tools.setup._exc import \
+    CantAddTranslationReference  # ... enhanced information
 
 # Logging / Debugging:
 from pdb import set_trace
@@ -41,6 +44,23 @@ __all__ = [
         'make_notes_logger', # used in calling functions
         # operating on connected objects:
         ]
+
+if HAS_SUBPORTALS:
+    __all__.extend([
+        'might_set_subportal',
+        'handle_subportal',
+        ])
+
+if HAS_VPSEARCH:
+    __all__.extend([
+        'handle_united_search',
+        ])
+    # visaplan:
+    from visaplan.plone.search.utils import (
+        expand_localsearch,
+        normalize_localsearch,
+        storable_localsearch,
+        )
 
 # ----------------------------------------- [ minilogging system ... [
 def make_notes_logger(logger, append_to=None):
@@ -368,3 +388,199 @@ def handle_menu(o, kwdict, created, do_pop=True):
         _DBG('switch_menu is %(switch_menu)r', locals())
 
     return changed, notes
+
+
+# --------------------------------- [ depends on visaplan.plone.subportals ... [
+def might_set_subportal(kwdict):
+    """
+    The given keyword arguments indicate that a subportal *might* be set.
+
+    I might not, even if this function returns True, because:
+
+    - the subportal is already added
+    - the `set_subportal` key is callable and might return False
+
+    The kwdict dictionary is not consumed.
+
+    >>> dic1 = {'only_other_keys': 42}
+    >>> might_set_subportal(dic1)
+    False
+    >>> dic1
+    {'only_other_keys': 42}
+    >>> dic2 = {'subportal': 'some-subportal-id'}
+    >>> might_set_subportal(dic2)
+    True
+
+    If `set_subportal` is callable, it *might* return True,
+    but we don't try it (we don't have an object):
+    >>> dic3 = {'subportal': 'other-subportal-id',
+    ...         'set_subportal': lambda: False}
+    >>> might_set_subportal(dic3)
+    True
+
+    However, if no subportal is available, it can't be set:
+    >>> dic4 = {'set_subportal': True}
+    >>> might_set_subportal(dic4)
+    False
+    """
+    get = kwdict.get
+    subportal = get('subportal')
+    set_subportal = get('set_subportal')
+    if set_subportal is None:
+        return bool(subportal)
+    elif (not set_subportal  # False
+           or not subportal):
+        return False
+    else:
+        return True
+    
+
+def handle_subportal(o, kwdict, created, do_pop=True):
+    """
+    Unitracc-specific functionality (visaplan.plone.subportals)
+    """
+    changed = False
+    notes = []
+    _DBG, _NFO, _ERR = make_miniloggers(notes)
+
+    pop = (kwdict.pop if do_pop
+           else kwdict.get)
+    subportal_given = 'subportal' in kwdict
+    set_subportal = pop('set_subportal', None)
+    if callable(set_subportal):
+        set_subportal, subportals = set_subportal(o)
+    else:
+        subportal = pop('subportal')
+        if set_subportal is None:
+            set_subportal = bool(subportal)
+        elif not subportal and set_subportal:
+            _NFO("Won't set_subportal %(subportal)r", locals())
+            set_subportal = False
+        if set_subportal:
+            found_subportals = o.getSubPortals()
+            _DBG('%(o)r: registered for subportals %(found_subportals)r', locals())
+            if subportal in found_subportals:
+                _NFO('%(o)r: checked subportal %(subportal)r', locals())
+                set_subportal = False
+            else:
+                subportals = list(found_subportals) + [subportal]
+
+    if set_subportal:
+        o.setSubPortals(subportals)
+        return True, notes
+    return False, notes
+# --------------------------------- ] ... depends on visaplan.plone.subportals ]
+    
+
+# ------------------------------------- [ depends on visaplan.plone.search ... [
+def handle_united_search(siblings, opt, src_lang):
+    """
+    Unitracc-specific functionality (visaplan.plone.search):
+
+    Take a given local search configuration from the primary object
+    (siblings[src_lang]) and modify it to contain the paths of the siblings as
+    well; this configuration is then applied to all siblings.
+
+    Any changes are done to the @@settings in the pickle storage
+    and don't affect the catalog brains.
+    """
+    if src_lang is not None:
+        otherval = opt.get('src_lang' )
+        if otherval is not None:
+            assert src_lang == otherval
+    else:
+        src_lang = opt['src_lang']
+    logger = opt['logger']
+    me = 'handle_united_search'
+    if src_lang is None:
+        logger.warn('%(me)s: no source language for %(siblings)s', locals())
+        return 0
+    siblings = siblings.copy()  # a simple copy should be sufficient
+    src_o = siblings.pop(src_lang)
+    # get complete configuration: 
+    settings = opt['portal'].getBrowser('unitraccsettings')
+    localsearch_all = settings.get('localsearch', {})
+
+    src_uid = src_o.UID()
+    src_search_raw = localsearch_all.get(src_uid)
+    if not src_search_raw:
+        logger.warn('%(me)s: no localsearch settings'
+                    ' for %(src_o)r (%(src_uid)s)', locals())
+        return 0
+    src_search = normalize_localsearch(src_o, src_search_raw)
+    logger.info('%(me)s: localsearch for UID %(src_uid)r: %(src_search)r', locals())
+    pp(('src_o:', src_o), ('src_uid:', src_uid), ('search (stored):', src_search_raw), ('search (normalized):', src_search))
+    search_path = src_search_raw.get('path')  # '.' oder SPEC oder so
+
+    NOPATH = src_search.get('path') == 'NOPATH'
+    if NOPATH:
+        logger.info("%(me)s: localsearch for %(src_o)r"
+                    " doesn't contain a path restriction"
+                    ' (%(src_search_raw)s)', locals())
+        added_here = frozenset()
+
+    src_search_exp = expand_localsearch(src_o, src_search)
+    src_paths = set(src_search_exp['path'])  # full path specs
+    updated_settings = {}
+    src_changes = False
+
+    for la, other_o in siblings.items():
+        other_uid = other_o.UID()
+        logger.info('%(me)s: UID %(other_uid)r --> %(other_o)r', locals())
+        if other_uid == src_uid:
+            logger.info('%(me)s: UID equals source UID %(src_uid)r', locals())
+            continue
+
+        other_search_raw = localsearch_all.get(other_uid)
+        if not other_search_raw:
+            logger.info('%(me)s: No localsearch for UID %(other_uid)r so far', locals())
+            if not NOPATH:
+                tup = other_o.getPhysicalPath()
+                other_path = '/'.join(tup)
+                added_here = set([other_path])
+        else:
+            other_search = normalize_localsearch(other_o, other_search_raw)
+            updated_settings[other_uid] = other_search
+            other_search_exp = expand_localsearch(other_o, other_search)
+            other_paths = set(other_search_exp['path'])
+            logger.info('%(me)s: localsearch for UID %(other_uid)r: %(other_search)r', locals())
+            if other_search['path'] == 'NOPATH':
+                if NOPATH:
+                    logger.info('%(me)s: localsearch for %(other_uid)r specifies NOPATH.', locals())
+                else:
+                    logger.warn('%(me)s: localsearch for %(other_uid)r specifies NOPATH.'
+                                ' This will be changed!', locals())
+            else:
+                txt = ', '.join(sorted(other_paths))
+                logger.info('%(me)s: localsearch for %(other_uid)r specifies %(txt)s', locals())
+                if NOPATH:
+                    logger.warn('%(me)s: path restriction for %(other_uid)r will be removed!', locals())
+                else:
+                    missing_here = src_paths - other_paths
+                    if missing_here:
+                        txt = ', '.join(sorted(missing_here))
+                        # will be done below: 
+                        logger.info('%(me)s: localsearch for %(other_uid)r: adding %(txt)s', locals())
+
+                    added_here = other_paths - src_paths
+                    if added_here:
+                        txt = ', '.join(sorted(missing_here))
+                        logger.info('%(me)s: localsearch for %(other_uid)r: found %(txt)s', locals())
+                        src_paths.update(added_here)
+                        src_changes += 1
+
+    if src_changes:
+        src_search['path'] = sorted(src_paths)
+        stored_dict = storable_localsearch(src_o, src_search)
+        logger.info('%(me)s: Changing localsearch for %(src_uid)r to %(stored_dict)s', locals())
+
+    for la, other_o in siblings.items():
+        other_uid = other_o.UID()
+        updated_settings.setdefault(other_uid, src_search)
+        other_search = updated_settings[other_uid]
+        paths_here = set(other_search['path'])
+        paths_here.update(src_paths)
+        other_search['path'] = sorted(paths_here)
+        stored_dict = storable_localsearch(other_o, other_search)
+        logger.info('%(me)s: Setting localsearch for %(other_uid)r to %(stored_dict)s', locals())
+# ------------------------------------- ] ... depends on visaplan.plone.search ]

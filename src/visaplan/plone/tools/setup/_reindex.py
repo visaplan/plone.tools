@@ -7,14 +7,12 @@ Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _tree
 from __future__ import absolute_import
 
 # Zope:
+import transaction
 from Products.CMFCore.utils import getToolByName
 from ZODB.POSException import POSKeyError
 
-# 3rd party:
-import transaction
-
 # Local imports:
-from ._query import make_query_extractor
+from visaplan.plone.tools.setup._query import make_query_extractor
 
 # Logging / Debugging:
 import logging

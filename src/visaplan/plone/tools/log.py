@@ -27,8 +27,10 @@ except ImportError:
     DevelopmentMode = False
 
 # visaplan:
-from visaplan.plone.tools.cfg import get_debug_active, split_filename
 from visaplan.tools.coding import safe_decode, safe_encode
+
+# Local imports:
+from visaplan.plone.tools.cfg import get_debug_active, split_filename
 
 # Logging / Debugging:
 import logging

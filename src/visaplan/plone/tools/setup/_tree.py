@@ -16,6 +16,7 @@ from string import capitalize
 from time import time
 
 # Zope:
+import transaction
 from Products.CMFCore.utils import getToolByName
 from Products.CMFCore.WorkflowCore import WorkflowException
 # Exceptions:
@@ -24,9 +25,6 @@ from ZODB.POSException import POSKeyError
 # Plone:
 from plone.uuid.interfaces import IUUID
 
-# 3rd party:
-import transaction
-
 # visaplan:
 from visaplan.tools.batches import batch_tuples
 from visaplan.tools.classes import StackOfDicts
@@ -34,7 +32,8 @@ from visaplan.tools.minifuncs import gimme_False
 from visaplan.tools.sequences import unique_union
 
 # Local imports:
-from ._args import (
+from visaplan.plone.tools._have import HAS_SUBPORTALS, HAS_VPSEARCH
+from visaplan.plone.tools.setup._args import (
     _extract_move_args,
     apply_move_order_options,
     extract_layout_switch,
@@ -42,12 +41,26 @@ from ._args import (
     setdefault_move_args,
     setdefault_source_language,
     )
-from ._exc import AlreadyTranslated  # from LinguaPlone, or a dummy
-from ._exc import CantAddTranslationReference  # ... enhanced information
-from ._get_object import make_object_getter
-from ._make_folder import make_subfolder_creator
-from ._reindex import make_reindexer
+from visaplan.plone.tools.setup._exc import \
+    AlreadyTranslated  # from LinguaPlone, or a dummy
+from visaplan.plone.tools.setup._exc import \
+    CantAddTranslationReference  # ... enhanced information
+from visaplan.plone.tools.setup._get_object import make_object_getter
+from visaplan.plone.tools.setup._make_folder import make_subfolder_creator
+from visaplan.plone.tools.setup._reindex import make_reindexer
 
+if HAS_SUBPORTALS:
+    # Local imports:
+    from visaplan.plone.tools.setup._o_tools import (
+        handle_subportal,
+        might_set_subportal,
+        )
+
+if HAS_VPSEARCH:
+    # Local imports:
+    from visaplan.plone.tools.setup._o_tools import handle_united_search
+
+# Logging / Debugging:
 # Logging / Debugging:
 import logging
 from pdb import set_trace
@@ -429,6 +442,11 @@ def _clone_tree_inner(context,  # --------------- [ _clone_tree_inner ... [
                 logger.info('Dest. container for %(la)r was changed (%(dest_o)r)', locals())
         # --------------- ] ... Schleife über die *anderen* Sprachen ]
 
+        # -------------------- [ unitracc; visaplan.plone.search ... [
+        if HAS_VPSEARCH and opt.get('united_search'):
+            handle_united_search(siblings_o, opt, src_lang)
+        # -------------------- ] ... unitracc; visaplan.plone.search ]
+
         for la, dest_dict in dic.items():
             opt.push(siblings_opt[la])
 
@@ -629,7 +647,12 @@ def _move_objects(from_o, to_o,  # ------------------ [ _move_objects ... [
         return 0
 
     try:
-        one_by_one = portal_type == 'Folder'
+        if HAS_SUBPORTALS:
+            consider_sp = might_set_subportal(kwargs)  # unitracc-specific
+            one_by_one = portal_type == 'Folder' or consider_sp
+        else:
+            consider_sp = False
+            one_by_one = portal_type == 'Folder'
         if one_by_one:
             i = 0
             for brain in brains:
@@ -639,6 +662,12 @@ def _move_objects(from_o, to_o,  # ------------------ [ _move_objects ... [
                     return move_limit_each
 
                 to_move = brain.getId
+                if consider_sp:  # unitracc-specific
+                    o = brain.getObject()
+                    handle_subportal(o, kwargs, created=False, do_pop=False)
+                    # we don't really care whether it was changed; it will be
+                    # reindexed after moving anyway!
+
                 logger.info('(%(i)d/%(count_here)d) move %(to_move)r ...', locals())
                 cp = from_o.manage_cutObjects(ids=(to_move,))
                 to_o.manage_pasteObjects(cp)

@@ -205,10 +205,7 @@ def language_spec(value=None, form=None, context=None,
             value = form['language']
         except KeyError:
             value = []
-    values = set([s2 for s2 in
-                     [s.strip() for s in list_of_strings(value)]
-                  if s2
-                  ])
+    values = set(list_of_strings(value))
     try:
         values.remove('all')
     except KeyError:
