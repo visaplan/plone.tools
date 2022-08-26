@@ -10,6 +10,8 @@ from Products.CMFCore.utils import getToolByName
 # visaplan:
 from visaplan.tools.lands0 import list_of_strings
 
+from ._helpers import build_groups_set
+
 try:
     # visaplan:
     from visaplan.tools.coding import safe_decode

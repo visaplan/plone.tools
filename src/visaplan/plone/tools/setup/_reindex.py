@@ -65,6 +65,9 @@ if HAVE_METADATAVERSION:
     # Zope:
     from zope.component import getUtility
 
+    # Plone:
+    from plone.registry.interfaces import IRegistry
+
     # 3rd party:
     from collective.metadataversion.config import DEFAULT_IDXS, FULL_IDXS_KEY
 
