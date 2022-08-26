@@ -21,7 +21,7 @@ as well: .utils.make_metadata_updater.
 """
 
 # Python compatibility:
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 # Setup tools:
 import pkg_resources

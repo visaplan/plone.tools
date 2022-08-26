@@ -14,7 +14,6 @@ from six.moves import map
 
 # Standard library:
 from collections import defaultdict
-from pprint import pprint
 
 # Zope:
 from Products.CMFCore.utils import getToolByName
@@ -310,7 +309,7 @@ def handle_language(o, kwdict, created, do_pop=True):  # ----- [ h.l. ... [
                 except AlreadyTranslated as e:
                     _ERR('%(o)r is already translated!', locals())
                     _ERR(str(CantAddTranslationReference(o, canonical)), {})
-                    if 0: pprint({
+                    if 0: pp({
                         'o': o, 'canonical': canonical,
                         'identical?': canonical is o,
                         })

@@ -2,6 +2,26 @@ Changelog
 =========
 
 
+1.4.10 (2022-02-03)
+-------------------
+
+Improvements:
+
+- Converted the .groups module in a subpackage
+
+New features: 
+
+- New option `missing=False` for
+
+  - .groups.groupinfo_factory
+
+  If `True`, the resulting function creates an `existing` key,
+  and for missing groups, the `group_title` is `None`;
+  otherwise, an empty dict is returned in such cases.
+
+[tobiasherp]
+
+
 1.4.9 (2021-12-13)
 ------------------
 
