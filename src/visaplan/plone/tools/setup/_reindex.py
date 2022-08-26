@@ -1,21 +1,53 @@
 # -*- coding: utf-8 -*- äöü vim: sw=4 sts=4 et tw=79
 """
-Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _tree
+Tools for Product Setup (GS migration steps, "upgrade steps")
+
+We provide a few convenience tools here, to help you avoid to rebuild
+*all* metadata and indexes whenever your setup has changed,
+regardless of the nature of the changes.
+
+The reindexing method of the catalog always expects an indexes specification --
+or None, which means: all indexes. So, what will we do if we don't really care
+about the indexes because all our changes apply to metadata only?
+We'll specify a "cheap" subset of the indexes;
+this subset is taken from the registry (if collective.metadataversion is
+installed; see below), with a hardcoded fallback value ['getId'].
+
+To go a step further and monitor the metadata, using a metadata_version
+metadata attribute, you might want to use collective.metadataversion,
+which as well allows you to adjust this subset.
+Because of the slightly changed focus, the function there is named differently
+as well: .utils.make_metadata_updater.
 """
 
 # Python compatibility:
 from __future__ import absolute_import
 
+# Setup tools:
+import pkg_resources
+
+try:
+    pkg_resources.get_distribution('collective.metadataversion')
+except pkg_resources.DistributionNotFound:
+    HAVE_METADATAVERSION = 0
+else:
+    HAVE_METADATAVERSION = 1
+
 # Standard library:
 from traceback import extract_stack
 
-# Zope:
-import transaction
-from Products.CMFCore.utils import getToolByName
-from ZODB.POSException import POSKeyError
+try:
+    # Zope:
+    import transaction
+    from Products.CMFCore.utils import getToolByName
+    from ZODB.POSException import POSKeyError
 
-# Local imports:
-from visaplan.plone.tools.setup._query import make_query_extractor
+    # Local imports:
+    from visaplan.plone.tools.setup._query import make_query_extractor
+except ImportError:
+    if __name__ != '__main__':  # doctests
+        raise
+    print('WARNING: Some imports failed; some tests might fail as well')
 
 # Logging / Debugging:
 import logging
@@ -24,8 +56,150 @@ from visaplan.tools.debug import pp
 
 __all__ = [
         'make_reindexer',
-        'reindex_all',
+        'reindex_all',       # calls make_reindexer internally
+        'get_default_idxs',  # return a cheap subset
         ]
+
+
+if HAVE_METADATAVERSION:
+    # Zope:
+    from zope.component import getUtility
+
+    # 3rd party:
+    from collective.metadataversion.config import DEFAULT_IDXS, FULL_IDXS_KEY
+
+    def get_default_idxs():
+        """
+        We have collective.metadataversion
+        """
+        registry = getUtility(IRegistry)
+        val = list(registry.get(FULL_IDXS_KEY) or DEFAULT_IDXS)
+        assert val, 'The default list of indexes must not be falsy!'
+        return val
+else:
+    def get_default_idxs():
+        """
+        We DON'T have collective.metadataversion
+        """
+        return ['getId']
+
+
+def _update_mri_kwargs(logger, kwargs):
+    """
+    Update a kwargs dict, asserting the presence of ``update_metadata`` and
+    ``idxs`` keys.
+
+    NOTE: This function is for internal use, and both the signature and
+          the functionality may change without notice!
+
+    We use a little test helper function here:
+
+    >>> def umri(kwargs):
+    ...     _update_mri_kwargs(None, kwargs)
+    ...     return sorted(kwargs.items())
+
+    The tests also assume our default list of "cheap indexes":
+    >>> get_default_idxs()
+    ['getId']
+
+    By default, we update the metadata; unless explicitly specified,
+    the indexes specification defaults to that cheap subset:
+    >>> kw = dict()
+    >>> umri(kw)
+    [('idxs', ['getId']), ('update_metadata', 1)]
+    >>> kw = dict(idxs=None)
+    >>> umri(kw)
+    [('idxs', None), ('update_metadata', 1)]
+    >>> kw = dict(idxs='idx1 idx2'.split())
+    >>> umri(kw)
+    [('idxs', ['idx1', 'idx2']), ('update_metadata', 1)]
+
+    However, you can always choose yourself whether to update the metadata,
+    of course:
+    >>> kw = dict(idxs=None, update_metadata=0)
+    >>> umri(kw)
+    [('idxs', None), ('update_metadata', 0)]
+    >>> kw = dict(idxs='idx1 idx2'.split(), update_metadata=1)
+    >>> umri(kw)
+    [('idxs', ['idx1', 'idx2']), ('update_metadata', 1)]
+
+    In fact, that `update_metadata` option "rules", if given,
+    in affecting the default for the `idxs` option.
+    >>> kw = dict(update_metadata=1)
+    >>> umri(kw)
+    [('idxs', ['getId']), ('update_metadata', 1)]
+    >>> kw = dict(update_metadata=0)
+    >>> umri(kw)
+    [('idxs', None), ('update_metadata', 0)]
+
+    You can explicitly specify update_metadata=None; in this case,
+    it depends on the idxs specification:
+    >>> kw = dict(update_metadata=None)
+    >>> umri(kw)
+    [('idxs', None), ('update_metadata', 0)]
+    >>> kw = dict(idxs=None, update_metadata=None)
+    >>> umri(kw)
+    [('idxs', None), ('update_metadata', 0)]
+    >>> kw = dict(idxs='idx1 idx2'.split(), update_metadata=None)
+    >>> umri(kw)
+    [('idxs', ['idx1', 'idx2']), ('update_metadata', 0)]
+    >>> kw = dict(idxs=''.split(), update_metadata=None)
+    >>> umri(kw)
+    [('idxs', ['getId']), ('update_metadata', 1)]
+    """
+    changes = {}
+    # The 'update_metadata' option "rules":
+    if 'update_metadata' in kwargs:
+        update_metadata = kwargs['update_metadata']
+    else:
+        update_metadata = 1
+        changes.update({
+            'update_metadata': update_metadata,
+            })
+
+    if 'idxs' in kwargs:
+        idxs = kwargs['idxs']
+        if update_metadata is None:  # must be specified explicitly
+            if idxs is None:  # the known value for "all"
+                update_metadata = 0
+            elif not idxs:  # "no indexes" is not allowed!
+                update_metadata = 1
+                idxs = get_default_idxs()
+                changes.update({
+                    'idxs': idxs,
+                    })
+            else:
+                # we have some "interesting subset" :
+                update_metadata = 0
+            changes.update({
+                'update_metadata': update_metadata,
+                })
+        if isinstance(idxs, tuple):
+            changes.update({
+                'idxs': list(idxs),
+                })
+        elif idxs is None:
+            pass
+        elif not isinstance(idxs, list):
+            changes.update({
+                'idxs': idxs.split(),
+                })
+    elif update_metadata is None:
+        # defaults: all indexes, no metadata
+        changes.update({
+            'idxs': None,
+            'update_metadata': 0,
+            })
+    elif update_metadata:
+        changes.update({
+            'idxs': get_default_idxs(),
+            'update_metadata': 1,
+            })
+    else:
+        changes.update({
+            'idxs': None,
+            })
+    kwargs.update(changes)
 
 
 def make_reindexer(**kwargs):
@@ -44,23 +218,18 @@ def make_reindexer(**kwargs):
     Vorgabewerte für die zu erzeugenden Funktion:
 
     update_metadata - sollen die Metadaten aktualisiert werden?
-                      (Vorgabe: True)
                       Wenn None, werden die Metadaten aktualisiert,
                       wenn eine leere Liste der Indexe übergeben wird.
     """
+    pop = kwargs.pop
     logger = kwargs.pop('logger', None)
     if logger is None:
         logger = logging.getLogger('reindex')
-    update_metadata = kwargs.pop('update_metadata', True)
-    if update_metadata:
-        idxs = kwargs.pop('idxs', None) or ['getId']
-    else:
-        idxs = kwargs.pop('idxs', ['getId'])
-        if update_metadata is None and not idxs:
-            update_metadata = True
-            idxs = ['getId']
+    _update_mri_kwargs(logger, kwargs)
+    update_metadata = kwargs.pop('update_metadata')
     ri_kwargs = {'update_metadata': update_metadata,
                  }
+    idxs = kwargs.pop('idxs')
     if idxs:
         ri_kwargs['idxs'] = idxs
     catalog = kwargs.pop('catalog', None)
@@ -232,3 +401,9 @@ def reindex_all(**kwargs):
         if i % 100:
             logger.info('committing remaining changes; total: %(i)r', locals())
             transaction.commit()
+
+
+if __name__ == '__main__':
+    # Standard library:
+    import doctest
+    doctest.testmod()

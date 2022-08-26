@@ -70,6 +70,7 @@ VERSION = read_version('VERSION',
 # ------------------------------------------- [ for setup_kwargs ... [
 long_description = '\n\n'.join([
     open('README.rst').read(),
+    open('TODO.rst').read(),
     open('CONTRIBUTORS.rst').read(),
     open('CHANGES.rst').read(),
 ])

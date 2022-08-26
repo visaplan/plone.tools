@@ -9,11 +9,11 @@ from __future__ import absolute_import
 from six import string_types as six_string_types
 
 try:
-    # Plone:
-    from plone.app.upgrade.utils import loadMigrationProfile
-
     # Zope:
     from Products.CMFCore.utils import getToolByName
+
+    # Plone:
+    from plone.app.upgrade.utils import loadMigrationProfile
 except ImportError:
     if __name__ != '__main__':  # for doctests
         raise

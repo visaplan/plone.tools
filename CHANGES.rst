@@ -2,16 +2,15 @@ Changelog
 =========
 
 
-2.0.0 (estimated)
------------------
+1.4.9 (2021-12-13)
+------------------
 
-- Breaking changes:
+Improvements:
 
-  - ``forms.tryagain_url``:
+- If collective.metadataversion_ is installed, use the configured default set of
+  indexes (if no `idxs` explicitly given but metadata recreation is requested)
 
-    - all options (which are all arguments except the request)
-      will `need to` be given by name
-      (which is possible and `recommended already`).
+[tobiasherp]
 
 
 1.4.8 (2021-11-29)
@@ -83,7 +82,7 @@ Profile changes:
   it will be removed in an near-future version.
 
   So, *don't "install"* this package (Quick-Installer, Plone add-ons);
-  just use it in Python code!
+  just use it in Python_ code!
 
   We keep the ``configure.zcml`` file and the autoinclude entry point, though;
   we can image to use e.g. the Plone registry for some settings.
@@ -164,7 +163,7 @@ Hints:
   which re-implements `make_input` without using BeautifulSoup.
   This will probably replace our present `make_input` function and then
   disregard any keyword options which are currently passed on to the
-  BeautifulSoup constructor, i.e. the `factory` option.
+  BeautifulSoup_ constructor, i.e. the `factory` option.
 
   Perhaps we'll create a new visaplan.zope.tools package and move this
   functionality there, though.
@@ -190,7 +189,7 @@ Improvements:
 
 Requirements:
 
-- visaplan.tools v1.3.1+
+- visaplan.tools_ v1.3.1+
 
 [tobiasherp]
 
@@ -481,10 +480,12 @@ Bugfixes:
 - Initial release.
   [tobiasherp]
 
+.. _BeautifulSoup: https://pypi.org/project/beautifulsoup4/
 .. _collective.metadataversion: https://pypi.org/project/collective.metadataversion
 .. _five.grok: https://pypi.org/project/five.grok
 .. _`metadata_version`: https://community.plone.org/t/metadata-column-metadata-version-for-conditional-metadata-refresh/14194/3
 .. _Products.Archetypes: https://pypi.org/project/Products.Archetypes
+.. _Python: https://www.python.org
 .. _simplejson: https://pypi.org/project/simplejson
 .. _visaplan.kitchen: https://pypi.org/project/visaplan.kitchen
 .. _visaplan.plone.infohubs: https://pypi.org/project/visaplan.plone.infohubs
