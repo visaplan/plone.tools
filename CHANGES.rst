@@ -14,6 +14,17 @@ Changelog
       (which is possible and `recommended already`).
 
 
+1.4.7 (2021-11-17)
+------------------
+
+Bugfixes:
+
+- When detecting the currently active language (``.context.getActiveLanguage[_unchecked]``),
+  we now check for the ``I18N_LANGUAGE`` cookie first.
+
+[tobiasherp]
+
+
 1.4.6 (2021-10-28)
 ------------------
 

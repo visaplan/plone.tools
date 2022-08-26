@@ -68,7 +68,13 @@ def getActiveLanguage(context):
     """
     language_tool = getToolByName(context, 'portal_languages')
     codes = language_tool.getSupportedLanguages()
-    la = context.REQUEST.get('LANGUAGE')
+    request = context.REQUEST
+    cookies = request.cookies
+    if cookies:
+        la = cookies.get('I18N_LANGUAGE')
+        if la and la in codes:
+            return la
+    la = request.get('LANGUAGE')
     if la and la in codes:
         return la
     return language_tool.getDefaultLanguage()
@@ -77,9 +83,15 @@ def getActiveLanguage(context):
 def getActiveLanguage_unchecked(context):
     """
     Return the code of the currently active language;
-    like getActiveLanguage (above), but without comparison the supported
+    like getActiveLanguage (above), but without comparison to supported
     languages, for speed reasons (e.g. for use in cache key functions)
     """
+    request = context.REQUEST
+    cookies = request.cookies
+    if cookies:
+        la = cookies.get('I18N_LANGUAGE')
+        if la:
+            return la
     la = context.REQUEST.get('LANGUAGE')
     if not la:
         pl = getToolByName(context, 'portal_languages')
