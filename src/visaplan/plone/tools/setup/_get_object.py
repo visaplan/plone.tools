@@ -140,13 +140,16 @@ def make_object_getter(context, **kwargs):
     if set_title:
         idxs.extend([
             'Title',
-            'getTitleIndex',
+            'getTitleIndex',  # ??
+            'sortable_title',
+            'SearchableText',    # contains the title
+            'getEfectiveIndex',  # contains lower-cased title after numeric time
             ])
     if set_uid:
         idxs.extend([
             'UID',
             ])
-    if set_uid:
+    if set_language:
         idxs.extend([
             'Language',
             ])

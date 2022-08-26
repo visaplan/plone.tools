@@ -15,6 +15,25 @@ Changelog
       (which is possible and `recommended already`).
 
 
+1.4.4 (2021-08-31)
+------------------
+
+Bugfixes:
+
+- .setup.make_object_getter() didn't update the Language index when the language was changed
+
+Improvements:
+
+- .setup.make_object_getter() now additionally updates the following indexes
+  when the .title attribute is changed:
+
+  - sortable_title
+  - SearchableText
+  - getEffectiveIndex
+
+[tobiasherp]
+
+
 1.4.3 (2021-08-27)
 ------------------
 
