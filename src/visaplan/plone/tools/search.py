@@ -368,17 +368,6 @@ def language_spec(value=None, form=None, context=None,
 
 
 if __name__ == "__main__":
-  if 0:
-      # Standard library:
-      from pprint import pprint
-
-      # Logging / Debugging:
-      from pdb import set_trace
-      set_trace()
-      mqs = make_querystring_mangle(None, mangle_umlauts)
-      lst = mqs(u'entkoppelte Förderschnecke ')
-      pprint(lst)
-  else:
     # Standard library:
     import doctest
     doctest.testmod()

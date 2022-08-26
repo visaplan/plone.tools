@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- äöü vim: ts=8 sts=4 sw=4 si et hls tw=79
+﻿# -*- coding: utf-8 -*- äöü vim: ts=8 sts=4 sw=4 si et hls tw=79
 # Python compatibility:
 from __future__ import absolute_import, print_function
 
@@ -30,6 +30,16 @@ except ImportError:
             return s
         return s.decode('utf-8')
 
+try:
+    # visaplan:
+    from visaplan.plone.groups.unitraccgroups.utils import pretty_group_title
+except ImportError:
+    if __name__ != '__main__':
+        raise
+    print("E: Couldn't import pretty_group_title!")
+    pretty_group_title = None
+
+
 __all__ = [
     'groupinfo_factory',
     ]
@@ -59,6 +69,10 @@ def groupinfo_factory(context, *args, **kwargs):
     """
     _parse_init_options(kwargs, args)
     pretty = kwargs['pretty']
+    if pretty_group_title is None and pretty:
+        raise ValueError('pretty=%(pretty)r not supported; '
+                "Couldn't import from visaplan.plone.groups!"
+                % kwargs)
     forlist = kwargs['forlist']
     missing = kwargs['missing']
     missing_mask = kwargs.get('missing_group_mask') or None

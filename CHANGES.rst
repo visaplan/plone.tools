@@ -2,6 +2,17 @@ Changelog
 =========
 
 
+1.4.12 (2022-02-15)
+-------------------
+
+Bugfixes:
+
+- Fixed a bug in .groups.groupinfo_factory(pretty);
+  for this to work, we need visaplan.plone.groups.
+
+[tobiasherp]
+
+
 1.4.11 (2022-02-05)
 -------------------
 

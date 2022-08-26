@@ -212,8 +212,7 @@ class BasicGenerator(object):
             and difference not in ('+ ', '- ')  # empty lines added/removed
             ]:
             print('\n'.join(difflines))
-            if sys.stdout.isatty():
-                set_trace()
+            if sys.stdout.isatty(): set_trace()
             return False
         return True
 
