@@ -15,6 +15,27 @@ Changelog
       (which is possible and `recommended already`).
 
 
+1.4.3 (2021-08-27)
+------------------
+
+New features: 
+
+- ``.search`` module:
+
+  - New conversion utilities ...
+
+    - `make_querystring_mangle`, a factory, to create
+    - `mangleQueryString`, using
+    - `mangle_umlauts`
+
+Miscellaneous:
+
+- `normalizeQueryString` (as well as the new `mangleQueryString`)
+   now auto-inserts asterisks at word ends *only*
+
+[tobiasherp]
+
+
 1.4.2 (2021-08-25)
 ------------------
 

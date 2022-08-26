@@ -9,12 +9,15 @@ from six import text_type as six_text_type
 
 __author__ = "Tobias Herp <tobias.herp@visaplan.com>"
 VERSION = (0,
-           2,   # normalizeQueryString
+           3,   # make_querystring_mangle()
            )
 
 __all__ = [
         'normalizeQueryString',  # created by factory:
         'make_querystring_normalizer',
+        'mangle_umlauts',
+        'mangleQueryString',     # created by factory:
+        'make_querystring_mangle',
         'language_spec',
         ]
 
@@ -83,13 +86,13 @@ def make_querystring_normalizer(decode=safe_decode):
       it is added to the beginning and end of every string:
 
       >>> normalizeQueryString('abc')
-      [u'*abc*']
+      [u'abc*']
       >>> normalizeQueryString(u'abc')
-      [u'*abc*']
+      [u'abc*']
       >>> normalizeQueryString('   abc\t  def  ')
-      [u'*abc*', u'*def*']
+      [u'abc*', u'def*']
       >>> normalizeQueryString('entkoppelte Förderschnecke ')
-      [u'*entkoppelte*', u'*F\xf6rderschnecke*']
+      [u'entkoppelte*', u'F\xf6rderschnecke*']
 
     - If it *is* contained somewhere, we assume the user to do this on purpose,
       and thus don't amend the asterisk anywhere:
@@ -138,12 +141,150 @@ def make_querystring_normalizer(decode=safe_decode):
                     if s != u'*'
                     ]
         else:
-            return [s.join((u'*', u'*'))
+            return [s + u'*'
                     for s in strings
                     ]
 
     return normalizeQueryString
 normalizeQueryString = make_querystring_normalizer(safe_decode)
+
+UMLAUTS_TO_BASECHAR = {
+    u'Ä': u'A',
+    u'Ö': u'O',
+    u'Ü': u'U',
+    u'ä': u'a',
+    u'ö': u'o',
+    u'ü': u'u',
+    u'ß': u'ss',
+    }
+def mangle_umlauts(s):
+    ur"""
+    We mimic a conversion here which we found done to our catalog data.
+
+    >>> mangle_umlauts(u'r\xfcckstellkr\xe4fte')
+    u'ruckstellkrafte'
+    >>> mangle_umlauts(u'sch\xf6ne T\xf6ne')
+    u'schone Tone'
+    """
+    nonascii = set(s)
+    for ch in sorted(nonascii.intersection(UMLAUTS_TO_BASECHAR.keys())):
+        s = s.replace(ch, UMLAUTS_TO_BASECHAR[ch])
+    return s
+
+
+def make_querystring_mangle(decode=safe_decode, *funcs):
+    r"""
+    Factory to create a `mangleQueryString` function,
+    injecting the default decoding function;
+    by default, the safe_decode function from visaplan.tools is used,
+    which (or course) recognizes unicode strings and decodes UTF8 and Latin-1.
+
+    This extends the normalizeQueryString functionality by applying one or more
+    transformations which are most interesting when non-ASCII search
+    expressions join the game.
+
+    >>> mangleQueryString = make_querystring_mangle(safe_decode)
+
+    ... which will accept a string (and optionally another decoding function)
+    and return a (possibly empty) list of unicode strings.
+
+    For empty input, an empty list is returned:
+
+    >>> mangleQueryString('   \t \n \r')
+    []
+
+    Like with normalizeQueryString,
+    there is special handling for the asterisk character ("*");
+    but additionally, we transform to lower case:
+
+    - If it is not present anywhere in the (non-empty) input string,
+      it is added to the beginning and end of every string:
+
+      >>> mangleQueryString('Abc')
+      [u'abc*']
+      >>> mangleQueryString(u'Abc')
+      [u'abc*']
+      >>> mangleQueryString('   aBc\t  def  ')
+      [u'abc*', u'def*']
+      >>> mangleQueryString('entkoppelte Förderschnecke ')
+      [u'entkoppelte*', u'f\xf6rderschnecke*']
+
+    - If it *is* contained somewhere, we assume the user to do this on purpose,
+      and thus don't amend the asterisk anywhere:
+
+      >>> mangleQueryString('ab*c')
+      [u'ab*c']
+      >>> mangleQueryString('rohr* leitung  ')
+      [u'rohr*', u'leitung']
+
+    - a single-word asterisk is removed and simply causes the asterisk
+      amemdments to be suppressed:
+
+      >>> mangleQueryString('Rohr * Leitung  ')
+      [u'rohr', u'leitung']
+
+    - Of course, a single asterisk *only* is like no search expression at all:
+
+      >>> mangleQueryString('  * ')
+      []
+
+    Now, so far the only difference to normalizeQueryString was the lowercase
+    conversion; not very interesting. But we can add more conversions:
+
+      >>> mqs = make_querystring_mangle(None, mangle_umlauts)
+      >>> mqs(u'entkoppelte F\xf6rderschnecke ')
+      [u'entkoppelte*', u'f\xf6rderschnecke*', u'forderschnecke*']
+      >>> mqs(u'R\xfcckstellkr\xe4fte *')
+      [u'r\xfcckstellkr\xe4fte', u'ruckstellkrafte']
+      >>> mqs(u'R\xfcckstellkr\xe4fte')
+      [u'r\xfcckstellkr\xe4fte*', u'ruckstellkrafte*']
+
+    """
+    if decode is None:
+        decode = safe_decode
+    FUNCS = tuple(funcs)
+
+    def mangleQueryString(string, decode=decode):
+        """
+        Return a (possibly empty) list of unicode strings.
+
+        Arguments:
+
+          string -- a string of some kind
+
+          decode -- a function to check and, if necessary,
+                    decode the given string
+        """
+        # searchstring is None or empty
+        if not string:
+            return []
+
+        if not isinstance(string, six_text_type):
+            string = decode(string)
+        if string.strip() == u'*':
+            return []
+        has_asterisk = u'*' in string
+        res = []
+        for chunk in string.lower().split():
+            if chunk == u'*':
+                assert has_asterisk
+                continue
+            if chunk in res:
+                continue
+            res.append(chunk)
+            for f in FUNCS:
+                val = f(chunk)
+                if val not in res:
+                    res.append(val)
+        if has_asterisk:
+            return res
+        else:
+            return [s + u'*'
+                    for s in res
+                    ]
+
+    return mangleQueryString
+mangleQueryString = make_querystring_mangle(safe_decode, mangle_umlauts)
 
 
 def language_spec(value=None, form=None, context=None,
@@ -227,6 +368,14 @@ def language_spec(value=None, form=None, context=None,
 
 
 if __name__ == "__main__":
+  if 0:
+      from pdb import set_trace
+      from pprint import pprint
+      set_trace()
+      mqs = make_querystring_mangle(None, mangle_umlauts)
+      lst = mqs(u'entkoppelte Förderschnecke ')
+      pprint(lst)
+  else:
     # Standard library:
     import doctest
     doctest.testmod()
