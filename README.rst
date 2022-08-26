@@ -127,7 +127,6 @@ it is not normally installed using ``pip``;
 instead, install it by adding it to your buildout::
 
     [buildout]
-
     ...
 
     eggs =

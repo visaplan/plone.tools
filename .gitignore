@@ -128,6 +128,7 @@ lib64
 
 # visaplan environment
 auto.msg
+all-versioned.md5
 tools/
 update-module
 init

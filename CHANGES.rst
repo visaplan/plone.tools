@@ -2,7 +2,6 @@ Changelog
 =========
 
 
-
 2.0.0 (estimated)
 -----------------
 
@@ -13,6 +12,47 @@ Changelog
     - all options (which are all arguments except the request)
       will `need to` be given by name
       (which is possible and `recommended already`).
+
+
+1.4.5 (2021-10-27)
+------------------
+
+Breaking changes:
+
+- Removed the .metadata module which had been added in release 1.4.2;
+  we have collective.metadataversion_ now to replace it,
+  storing the `metadata_version`_ value persistently in the registry.
+
+New features: 
+
+- New .attools functions:
+
+  - `get_first_text_as_html`
+  - `get_all_texts`
+  - `generate_all_texts`
+
+- New .dxtools module, containing the functions:
+
+  - `get_first_text_as_html`
+  - `get_all_texts`
+  - `generate_all_texts`
+
+Profile changes:
+
+- Removed the ``default`` profile;
+  there is currently no point in installing this package as a Plone plugin.
+  Just add it to your required eggs, and import from the modules.
+
+  We keep the the ``uninstall`` profile *for now;*
+  it will be removed in an near-future version.
+
+  So, *don't "install"* this package (Quick-Installer, Plone add-ons);
+  just use it in Python code!
+
+  We keep the ``configure.zcml`` file and the autoinclude entry point, though;
+  we can image to use e.g. the Plone registry for some settings.
+
+[tobiasherp]
 
 
 1.4.4 (2021-08-31)
@@ -66,12 +106,10 @@ New utilities:
 
 Temporary changes:
 
-- New ``.metadata`` module to support conditional metadata updates;
-  this will likely move to a dedicated package, so don't expect it to
-  exist in releases 1.5+.
+- New ``.metadata`` module to support conditional metadata updates.
 
-  - This includes a ``metadata_version`` metadata column, holding an integer value; see
-    https://community.plone.org/t/metadata-column-metadata-version-for-conditional-metadata-refresh/14194/3
+  **Note:** this is removed in release 1.4.5.
+  If you need the `metadata_version`_ metadata column, please use collective.metadataversion_ instead.
 
 [tobiasherp]
 
@@ -407,7 +445,9 @@ Bugfixes:
 - Initial release.
   [tobiasherp]
 
+.. _collective.metadataversion: https://pypi.org/project/collective.metadataversion
 .. _five.grok: https://pypi.org/project/five.grok
+.. _`metadata_version`: https://community.plone.org/t/metadata-column-metadata-version-for-conditional-metadata-refresh/14194/3
 .. _Products.Archetypes: https://pypi.org/project/Products.Archetypes
 .. _simplejson: https://pypi.org/project/simplejson
 .. _visaplan.kitchen: https://pypi.org/project/visaplan.kitchen

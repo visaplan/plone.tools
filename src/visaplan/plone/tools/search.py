@@ -177,7 +177,7 @@ def make_querystring_mangle(decode=safe_decode, *funcs):
     Factory to create a `mangleQueryString` function,
     injecting the default decoding function;
     by default, the safe_decode function from visaplan.tools is used,
-    which (or course) recognizes unicode strings and decodes UTF8 and Latin-1.
+    which (of course) recognizes unicode strings and decodes UTF-8 and Latin-1.
 
     This extends the normalizeQueryString functionality by applying one or more
     transformations which are most interesting when non-ASCII search

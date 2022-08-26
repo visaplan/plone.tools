@@ -6,7 +6,5 @@
             -->
     <include file="profiles.zcml"
         />
-    <include file="metadata.zcml"
-        />
 
 </configure>

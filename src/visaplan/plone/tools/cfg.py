@@ -57,9 +57,6 @@ logger = getLogger('visaplan.plone.tools')
 try:
     # Zope:
     from App.config import getConfiguration
-
-    # visaplan:
-    from visaplan.tools.minifuncs import NoneOrString, makeBool
 except ImportError:
     if __name__ != '__main__':
         raise
@@ -280,7 +277,7 @@ def split_filename(fn, name=None,
                     ':'.join(lst2[pi+1:] + [_fn_base]),
                     )
         except ValueError as e:
-            print((str(e)))
+            print(str(e))
             return '?'.join(lst2)
             raise ValueError('Unsupported filename: %(fn)r' % locals())
     if prefix is None:

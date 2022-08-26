@@ -27,7 +27,7 @@ def valid_suffix(suffix):
     suffix = suffix.strip()
     if not suffix:
         return suffix
-    allowed = set('.dev0123456789rcpost')
+    allowed = set('dev.0123456789rcpost')
     disallowed = set(suffix).difference(allowed)
     if disallowed:
         disallowed = ''.join(sorted(disallowed))
@@ -175,6 +175,10 @@ setup_kwargs = dict(
         # 'visaplan.plone.infohubs >=1.1.1.dev1',  # .hubs2 module
         # ... further requirements removed
     ],
+    entry_points="""
+    [z3c.autoinclude.plugin]
+    target = plone
+    """,
     extras_require={
         'test': [
             'nose2',
@@ -188,10 +192,6 @@ setup_kwargs = dict(
     # see:
     # https://docs.nose2.io/en/latest/usage.html#running-tests-with-python-setup-py-test
     test_suite='nose2.collector.collector',
-    entry_points="""
-    [z3c.autoinclude.plugin]
-    target = plone
-    """,
 )
 if 0:
     from pprint import pprint

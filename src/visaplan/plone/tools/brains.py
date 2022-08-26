@@ -16,12 +16,6 @@ VERSION = (0,
 __version__ = '.'.join(map(str, VERSION))
 
 
-# Standard library:
-from collections import defaultdict
-
-# visaplan:
-from visaplan.tools.minifuncs import NoneOrString
-
 __all__ = [
            'make_collector',
            ]
