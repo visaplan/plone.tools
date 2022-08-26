@@ -48,6 +48,7 @@ def generate_all_texts(context, *fieldnames, **kwargs):
     if 'schema' in kwargs:
         schema = kwargs.pop('schema')
     elif fieldnames and not isinstance(fieldnames[0], six_string_types):
+        fieldnames = list(fieldnames)
         schema = fieldnames.pop(0)
     else:
         schema = context.Schema()

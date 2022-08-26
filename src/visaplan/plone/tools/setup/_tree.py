@@ -586,7 +586,7 @@ def _clone_tree_inner(context,  # --------------- [ _clone_tree_inner ... [
                                       **child_kwargs)
                     transaction.commit()
             finally:
-                opt.pop()
+                opt.pop()  # (a StackOfDicts)
 
         # Wir haben jetzt src_o, dest_o und same_parent;
         # nun können wir in dest_o die neuen sprachverknüpften Kindelemente

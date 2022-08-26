@@ -391,7 +391,7 @@ def changeable_path(fullpath, devmode=None):
     >>> changeable_path('.../eggs/visaplan.cool.tool-1.0-py2.7.egg/src/.../configure.zcml')
     False
     """
-    splitpath = normcase(abspath(fullpath).split(sep))
+    splitpath = normcase(abspath(fullpath)).split(sep)
     filename = splitpath.pop()
     # TODO: normcase for whitelist
     if filename not in ('version.txt',

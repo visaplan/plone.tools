@@ -14,8 +14,23 @@ Changelog
       (which is possible and `recommended already`).
 
 
+1.4.6 (2021-10-28)
+------------------
+
+Bugfixes:
+
+- Fixed an error for the new functions in the ``.attools`` and ``.dxtools`` modules
+  when giving the schema as positional argument
+  (which to use isn't implemented yet for ``.dxtools`` anyway).
+
+[tobiasherp]
+
+
 1.4.5 (2021-10-27)
 ------------------
+
+(If using the new functions in the .axtools  module, please use release
+1.4.6+ instead).
 
 Breaking changes:
 
