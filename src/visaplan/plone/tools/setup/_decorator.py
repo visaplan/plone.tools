@@ -25,6 +25,9 @@ from __future__ import absolute_import
 from functools import wraps
 from time import time
 
+# Local imports:
+from visaplan.plone.tools.env import worker_name
+
 # Logging / Debugging:
 import logging
 
@@ -64,7 +67,12 @@ def step(func):
     def wrapper(context, logger=None):
         funcname = func.__name__
         if logger is None:
-            logger = logging.getLogger('setup:'+funcname)
+            label = ':'.join(filter(None, [
+                                    'setup',
+                                    worker_name(),
+                                    funcname,
+                                    ]))
+            logger = logging.getLogger(label)
         _started = time()
         try:
             res = func(context, logger)

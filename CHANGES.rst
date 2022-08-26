@@ -2,6 +2,26 @@ Changelog
 =========
 
 
+1.4.13 (2022-03-04)
+-------------------
+
+Bugfixes:
+
+- Fixed a bug in .groups.groupinfo_factory(pretty);
+  for this to work, we need visaplan.plone.groups.
+
+Improvements:
+
+- The label of the default logger of the ``@@step`` decorator
+  now includes the name of the worker, e.g. ``instance`` or ``client``
+
+New features: 
+
+- New `.env` module, providing the `worker_name()`
+
+[tobiasherp]
+
+
 1.4.12 (2022-02-15)
 -------------------
 
