@@ -4,7 +4,7 @@ Helpers for arguments exploitation
 """
 
 # Python compatibility:
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function
 
 try:
     # visaplan:
@@ -262,7 +262,7 @@ def normalize_menu_switch(dic):
     Conflicting specifications cause an error:
     >>> dic3={'switch_menu': 1, 'menu': 0}
     >>> normalize_menu_switch(dic3)
-    Traceback (most recent call last):                   
+    Traceback (most recent call last):
       ...
     ValueError: 'menu': 0 conflicts 'switch_menu' value 1!
 

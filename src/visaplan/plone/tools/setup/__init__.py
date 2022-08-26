@@ -11,20 +11,20 @@ __all__ = [
         'extract_object_and_brain', # --> (o, brain)
         'extract_object_or_brain',  # --> (o, brain=None)
         'extract_brain_or_object',  # --> (brain, o=None)
-        ## _attr: 
+        ## _attr:
         'make_attribute_setter',
-        ## _decorator: 
+        ## _decorator:
         'step',
         'StepAborted',
-        ## _get_object: 
+        ## _get_object:
         'make_object_getter',
-        ## _make_folder: 
+        ## _make_folder:
         'make_subfolder_creator',
         ## _query:
         'make_query_extractor',
         'iterate_query',
         'getAllLanguages',
-        ## _reindex: 
+        ## _reindex:
         'make_reindexer',
         'reindex_all',
         ## _rename:
@@ -34,11 +34,11 @@ __all__ = [
         ## _roles:
         'set_local_roles',
         'make_simple_localroles_function',
-        ## _switch: 
+        ## _switch:
         'switch_menu_item',  # Menüeintrag (de)aktivieren
         'show_item',
         'hide_item',
-        ## _tree: 
+        ## _tree:
         'make_subfolder_creator',
         ## _types:
         'setVersionedTypes',  # --> setVersionableContentTypes

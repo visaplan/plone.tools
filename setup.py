@@ -27,7 +27,7 @@ def valid_suffix(suffix):
     suffix = suffix.strip()
     if not suffix:
         return suffix
-    allowed = set('.dev0123456789rc')
+    allowed = set('.dev0123456789rcpost')
     disallowed = set(suffix).difference(allowed)
     if disallowed:
         disallowed = ''.join(sorted(disallowed))
@@ -36,7 +36,7 @@ def valid_suffix(suffix):
                          % locals())
     chunks = suffix.split('.')
     chunk = chunks.pop(0)
-    if chunk:
+    if chunk and not chunk.startswith('rc') and not chunk.startswith('post'):
         raise ValueError('Version suffix must start with "."'
                          ' (%(suffix)r)'
                          % locals())
@@ -118,6 +118,8 @@ def github_urls(package, **kwargs):
             user = pkg_list[0]
             if 'user' in kwargs:
                 assert pop('user') == user
+        else:
+            user = pop('user')
     if pop('travis', False):  # reqires github to be trueish
         res.update({  # CHECKME: is there a de-facto standard key for this?
             'Tests': 'https://travis-ci.org/%(user)s/%(package)s' % locals()
@@ -191,4 +193,9 @@ setup_kwargs = dict(
     target = plone
     """,
 )
+if 0:
+    from pprint import pprint
+    del setup_kwargs['long_description']
+    pprint(setup_kwargs)
+    raise SystemExit(1)
 setup(**setup_kwargs)

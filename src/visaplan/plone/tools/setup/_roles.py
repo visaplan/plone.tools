@@ -4,7 +4,6 @@ Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _roles
 """
 
 # Python compatibility:
-# Unitracc-Tools:
 from __future__ import absolute_import
 
 from six import string_types as six_string_types
@@ -77,7 +76,7 @@ def set_local_roles(**kwargs):
     # if 'func' in kwargs:
     func = kwargs.pop('func', None)
     if func is not None:
-        # wird benötigt, als Argument für die Funktion! 
+        # wird benötigt, als Argument für die Funktion!
         target_state = kwargs.pop('target_state')
         thelist = func(brain, target_state)
     else:

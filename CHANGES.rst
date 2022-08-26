@@ -15,6 +15,49 @@ Changelog
       (which is possible and `recommended already`).
 
 
+1.4.2 (2021-08-25)
+------------------
+
+New utilities:
+
+- ``.context.getActiveLanguage_unchecked``: like `getActiveLanguage`,
+  but not checking against the supported languages, and thus faster
+  (e.g. for cache key functions)
+
+Temporary changes:
+
+- New ``.metadata`` module to support conditional metadata updates;
+  this will likely move to a dedicated package, so don't expect it to
+  exist in releases 1.5+.
+
+  - This includes a ``metadata_version`` metadata column, holding an integer value; see
+    https://community.plone.org/t/metadata-column-metadata-version-for-conditional-metadata-refresh/14194/3
+
+[tobiasherp]
+
+
+1.4.1 (2021-06-30)
+------------------
+
+Bugfixes:
+
+- Bugfix for ``.setup.handle_subportal``
+
+Hints:
+
+- visaplan.plone.search contains a `make_input_text` function
+  in it's ``.utils`` module
+  which re-implements `make_input` without using BeautifulSoup.
+  This will probably replace our present `make_input` function and then
+  disregard any keyword options which are currently passed on to the
+  BeautifulSoup constructor, i.e. the `factory` option.
+
+  Perhaps we'll create a new visaplan.zope.tools package and move this
+  functionality there, though.
+
+[tobiasherp]
+
+
 1.4.0 (2021-03-26)
 ------------------
 

@@ -4,7 +4,6 @@ Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _attr
 """
 
 # Python compatibility:
-# Unitracc-Tools:
 from __future__ import absolute_import
 
 # visaplan:

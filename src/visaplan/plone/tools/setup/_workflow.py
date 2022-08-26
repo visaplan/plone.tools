@@ -29,9 +29,6 @@ from pdb import set_trace
 # Exceptions:
 
 
-
-
-
 __all__ = [
         'make_transition_applicator',
         ]
@@ -179,7 +176,7 @@ def make_transition_applicator(**kwargs):  # ---- [ m._t._a. ... [ -[[
     set_best_status = kwargs.pop('set_best_status', bool(uids_tuples))
     del uids_tuples
     # neue UIDs den target_sets nur hinzufügen, wenn der Zielstatus
-    # in den ursprünglich angegebenen enthalten ist: 
+    # in den ursprünglich angegebenen enthalten ist:
     target_values = target_sets.ordered_keys()
     transitions_map = kwargs.pop('transitions_map', TRANSITIONS_MAP)
     returns = kwargs.pop('returns', 'changed')
@@ -234,7 +231,7 @@ def make_transition_applicator(**kwargs):  # ---- [ m._t._a. ... [ -[[
     if tell_about_uids:
         if isinstance(tell_about_uids, dict):
             tell_about_uids = list(tell_about_uids.items())
-    
+
     # ------------ [ m._t._a.: generierte Infofunktion ... [
     stored_hits = {'prev': None,
                    'current': [],
@@ -342,7 +339,7 @@ def make_transition_applicator(**kwargs):  # ---- [ m._t._a. ... [ -[[
         """
         # TODO: add_viewers_group, für restricted:
         # - auch, wenn Status schon 'restricted' ist (Reparatur)
-        # - abhängig z. B. von portal_type; also z. B. durch Funktion zu regeln 
+        # - abhängig z. B. von portal_type; also z. B. durch Funktion zu regeln
         current_state = brain.review_state
         changed = False
         target_ok = True
@@ -469,7 +466,7 @@ def make_transition_applicator(**kwargs):  # ---- [ m._t._a. ... [ -[[
                     o = None
                     changed, target_ok = None, False
                 # --------------- ] ... WF-Transition ]
-            # --- [ Berechtigungs-Akquisition ... [ 
+            # --- [ Berechtigungs-Akquisition ... [
             if set_inherit is not None:
                 if set_inherit == 'auto':
                     set_inherit = target_state in ('published', 'inherit')

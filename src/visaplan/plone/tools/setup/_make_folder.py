@@ -58,7 +58,7 @@ def make_subfolder_creator(**kwargs):
 
     idxs - eine Liste der zu aktualisierenden Indexe;
            make_reindexer wird per Vorgabe ['getId'] verwenden
-          
+
     """
     parent = kwargs.pop('parent', None)
     logger = kwargs.pop('logger', None)
@@ -154,7 +154,7 @@ def make_subfolder_creator(**kwargs):
 
         # ---------- [set_]language, [set_]canonical:
         ch, notes = handle_language(new_child, kwargs, created)
-        # we don't have a changes counter here yet 
+        # we don't have a changes counter here yet
         for tup in notes:
             lognotes(tup)
         if ch:

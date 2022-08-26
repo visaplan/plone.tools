@@ -13,7 +13,7 @@ from Products.CMFCore.utils import getToolByName
 __all__ = [
         # 'make_mover',  (not yet implemented)
         'make_renamer',
-        # data: 
+        # data:
         'ACCEPT_ANY',
         ]
 
@@ -135,7 +135,7 @@ def make_renamer(**kwargs):
 
         changes = 0
         try:
-            # we do have at least either o or a brain 
+            # we do have at least either o or a brain
             assert o is not None or brain is not None
 
             if newtitle:

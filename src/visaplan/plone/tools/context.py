@@ -41,6 +41,7 @@ VERSION = (0,
            )
 
 __all__ = ['getActiveLanguage',
+           'getActiveLanguage_unchecked',
            'getSupportedLanguageTuples',
            'make_translator',
            'make_pathByUIDGetter',
@@ -67,11 +68,23 @@ def getActiveLanguage(context):
     """
     language_tool = getToolByName(context, 'portal_languages')
     codes = language_tool.getSupportedLanguages()
-    request = context.REQUEST
-    la = request.get('LANGUAGE')
+    la = context.REQUEST.get('LANGUAGE')
     if la and la in codes:
         return la
     return language_tool.getDefaultLanguage()
+
+
+def getActiveLanguage_unchecked(context):
+    """
+    Return the code of the currently active language;
+    like getActiveLanguage (above), but without comparison the supported
+    languages, for speed reasons (e.g. for use in cache key functions)
+    """
+    la = context.REQUEST.get('LANGUAGE')
+    if not la:
+        pl = getToolByName(context, 'portal_languages')
+        la = pl.getDefaultLanguage()
+    return la
 
 
 def getSupportedLanguageTuples(context):
@@ -197,6 +210,9 @@ def make_SessionDataProxy(context):
     """
 
     session = context.REQUEST.SESSION
+    # session is incomplete, in lacking a __contains__ method;
+    # by this trick we prevent python-modernize from breaking our code:
+    has_key = session.has_key
 
     class SDProxy(dict):
         """
@@ -206,7 +222,7 @@ def make_SessionDataProxy(context):
             try:
                 return dict.__getitem__(self, key)
             except KeyError:
-                if session.has_key(key):
+                if has_key(key):  # noqa; see above
                     val = session.get(key)
                     dict.__setitem__(self, key, val)
                 else:
@@ -449,7 +465,7 @@ def make_pathByUIDGetter(context):
 
     def uid2path(uid):
         return indexes['path']._unindex[indexes['UID']._index[uid]]
-            
+
     return uid2path
 
 
@@ -561,6 +577,7 @@ def get_published_templateid(context):
     Return the template id, as of the PUBLISHED variable, or None
     """
     request = context.REQUEST
-    if request.has_key('PUBLISHED'):
+    has_key = request.has_key
+    if has_key('PUBLISHED'):  # noqa; see above
         return request['PUBLISHED'].__name__
     return None

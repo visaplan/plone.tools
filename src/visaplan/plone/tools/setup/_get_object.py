@@ -33,6 +33,7 @@ from visaplan.plone.tools.setup._o_tools import (
     )
 
 if HAS_SUBPORTALS:
+    # Local imports:
     from visaplan.plone.tools.setup._o_tools import handle_subportal
 
 # Local imports:
@@ -41,7 +42,6 @@ from visaplan.plone.tools.setup._reindex import make_reindexer
 # Logging / Debugging:
 import logging
 from pdb import set_trace
-
 
 __all__ = [
         'make_object_getter',
@@ -114,7 +114,6 @@ def make_object_getter(context, **kwargs):
         idxs = []
     elif not idxs:  # e.g. False
         idxs = None
-    set_trace()
     mrx_kw = {  # make_reindexer keyword args
         'logger': logger,
         'context': context if parent is None

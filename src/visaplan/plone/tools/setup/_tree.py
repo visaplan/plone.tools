@@ -61,7 +61,6 @@ if HAS_VPSEARCH:
     from visaplan.plone.tools.setup._o_tools import handle_united_search
 
 # Logging / Debugging:
-# Logging / Debugging:
 import logging
 from pdb import set_trace
 from visaplan.tools.debug import pp
@@ -694,7 +693,7 @@ def _move_objects(from_o, to_o,  # ------------------ [ _move_objects ... [
         if unlimited:
             batch_size = pop('batch_size', 10)
             all_ids = [brain.getId for brain in brains]
-            # TODO: use visaplan.tools.batches.batch_tuples 
+            # TODO: use visaplan.tools.batches.batch_tuples
             if batch_size and batch_size < count_here:
                 logger.info('Moving %(count_here)d %(portal_type)r objects'
                 ' of language %(lang)r'

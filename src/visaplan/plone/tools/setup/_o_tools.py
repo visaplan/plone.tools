@@ -9,6 +9,8 @@ All tools in this module are called in the same style.
 # Python compatibility:
 from __future__ import absolute_import
 
+# Python compatibility:
+from six import string_types as six_string_types
 from six.moves import map
 
 # Standard library:
@@ -460,7 +462,7 @@ def might_set_subportal(kwdict):
         return False
     else:
         return True
-    
+
 
 def handle_subportal(o, kwdict, created, do_pop=True):
     """
@@ -485,19 +487,26 @@ def handle_subportal(o, kwdict, created, do_pop=True):
             set_subportal = False
         if set_subportal:
             found_subportals = o.getSubPortals()
+            found_set = set(found_subportals)
+            if isinstance(subportal, six_string_types):
+                wanted_set = set([subportal])
+            else:
+                wanted_set = set(subportal)
             _DBG('%(o)r: registered for subportals %(found_subportals)r', locals())
-            if subportal in found_subportals:
+
+            added_set = wanted_set - found_set
+            if added_set:
+                subportals = list(found_subportals) + list(added_set)
+            else:
                 _NFO('%(o)r: checked subportal %(subportal)r', locals())
                 set_subportal = False
-            else:
-                subportals = list(found_subportals) + [subportal]
 
     if set_subportal:
         o.setSubPortals(subportals)
         return True, notes
     return False, notes
 # --------------------------------- ] ... depends on visaplan.plone.subportals ]
-    
+
 
 # ------------------------------------- [ depends on visaplan.plone.search ... [
 def handle_united_search(siblings, opt, src_lang):
@@ -524,7 +533,7 @@ def handle_united_search(siblings, opt, src_lang):
         return 0
     siblings = siblings.copy()  # a simple copy should be sufficient
     src_o = siblings.pop(src_lang)
-    # get complete configuration: 
+    # get complete configuration:
     settings = opt['portal'].getBrowser('unitraccsettings')
     localsearch_all = settings.get('localsearch', {})
 
@@ -586,7 +595,7 @@ def handle_united_search(siblings, opt, src_lang):
                     missing_here = src_paths - other_paths
                     if missing_here:
                         txt = ', '.join(sorted(missing_here))
-                        # will be done below: 
+                        # will be done below:
                         logger.info('%(me)s: localsearch for %(other_uid)r: adding %(txt)s', locals())
 
                     added_here = other_paths - src_paths

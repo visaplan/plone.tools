@@ -12,7 +12,9 @@ from six import text_type as six_text_type
 # Zope:
 from Products.CMFCore.utils import getToolByName
 
+# Local imports:
 from visaplan.plone.tools._have import HAS_KITCHEN
+
 if HAS_KITCHEN:
     # visaplan:
     from visaplan.kitchen.spoons import generate_uids
@@ -226,7 +228,7 @@ def make_uid_collector(getbyuid, transform, extract=generate_uids,
 
     if expect != 'brain':
         raise ValueError('expect=%(expect)r not implemented!' % locals())
-    
+
     if extract is None:
         raise ValueError('No extract function given!')
 
@@ -308,8 +310,9 @@ def make_uid_collector(getbyuid, transform, extract=generate_uids,
                 if isinstance(debug_uids, dict):
                     uidinfo = debug_uids[uid]
                     ppargs.insert(1, ('UID-Info:', uidinfo))
-                pp(ppargs)
-                set_trace()
+                if 0 and 'debug collect_uids_2':
+                    pp(ppargs)
+                    set_trace()
             collect_uids_2(getbyuid(uid), depth+1, stack+[uid])
 
     return collect_uids_2, theset

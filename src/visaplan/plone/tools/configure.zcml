@@ -2,5 +2,11 @@
     xmlns="http://namespaces.zope.org/zope">
 
     <include package=".views"
+        /><!-- gf: views/configure.zcml
+            -->
+    <include file="profiles.zcml"
         />
+    <include file="metadata.zcml"
+        />
+
 </configure>

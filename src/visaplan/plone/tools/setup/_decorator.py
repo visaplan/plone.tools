@@ -31,7 +31,7 @@ import logging
 __all__ = [
         # decorators:
         'step',
-        # noch unfertig: 
+        # noch unfertig:
         # 'upgrade_step',
         'make_step_decorator',
         # exceptions:
@@ -57,7 +57,7 @@ def step(func):
     """
     # da die def-Anweisung hier nicht ausgeführt wird, ist eine implizite
     # "Impfung" der verpackten Funktion mit zusätzlichen Variablen (wie z.B.
-    # "site") leider nicht möglich; dafür würden zustäzliche Argumente
+    # "site") leider nicht möglich; dafür würden zusätzliche Argumente
     # benötigt, und mithin eine Änderung der Signatur.
 
     @wraps(func)
@@ -149,11 +149,11 @@ def upgrade_step(destination, **kwargs):
                 logger = logging.getLogger(logger_name % locals())
             logger.info('[ updating %(package)s to version %(destination)s ... [',
                         locals())
-            '''            
+            '''
                         {'package': package,
                          'destination': destination,
                         })
-            '''            
+            '''
             _started = time()
             if rev:
                 logger.info('%(funcname)s@%(rev)s started', locals())

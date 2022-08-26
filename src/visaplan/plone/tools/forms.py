@@ -10,9 +10,26 @@ from six import string_types as six_string_types
 from six import text_type as six_text_type
 from six.moves.urllib.parse import urlencode, urlsplit, urlunsplit
 
-from visaplan.plone.tools._have import HAS_INFOHUBS, HAS_BEAUTIFULSOUP
+# Setup tools:
+import pkg_resources
+
+try:
+    pkg_resources.get_distribution('beautifulsoup4')
+except pkg_resources.DistributionNotFound:
+    HAS_BEAUTIFULSOUP = False
+else:
+    HAS_BEAUTIFULSOUP = True
+
+try:
+    pkg_resources.get_distribution('visaplan.plone.infohubs')
+except pkg_resources.DistributionNotFound:
+    HAS_INFOHUBS = False
+else:
+    HAS_INFOHUBS = True
+
 
 if HAS_INFOHUBS:
+    # visaplan:
     from visaplan.plone.infohubs.hubs2 import context_and_form_tuple
 else:
     context_and_form_tuple = None
@@ -108,7 +125,8 @@ __all__ = ('tryagain_url',
            'detect_duplicates',
            'uid_or_number',
            # HTML-Code erzeugen:
-           'make_input',
+           'make_input',  # ... but see the new make_input_text
+                          # function in visaplan.plone.search.utils!
            # --------------------- [ nun in visaplan.tools.dicts ... [
            # 'updated',
            # --------------------- ] ... nun in visaplan.tools.dicts ]

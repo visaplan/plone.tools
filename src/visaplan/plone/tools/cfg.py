@@ -92,7 +92,7 @@ def get_debug_active(product, default=None):
                              % locals())
         val = dic.get('debug_active', '')
         return makeBool(val, default)
-    # in case of errors: 
+    # in case of errors:
     logger.info('get_debug_active(%(product)r):'
                 ' using default %(default)r',
                 locals())
@@ -403,7 +403,7 @@ def split_srcfilename(fn):
             i += 1
         return _pkg_and_submodule(package_name, fn_list[i:]) + (False,)
 
-    # kein Egg; 
+    # kein Egg;
     src_bases = src_positions[-2:]
     if src_bases[1:]:  # ja, es gibt (mindestens) zwei:
         sb1, sb2 = src_bases

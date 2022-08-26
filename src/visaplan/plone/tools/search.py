@@ -117,9 +117,9 @@ def make_querystring_normalizer(decode=safe_decode):
         Arguments:
 
           string -- a string of some kind
-          
+
           decode -- a function to check and, if necessary,
-                    decode the given string 
+                    decode the given string
         """
         # searchstring is None or empty
         if not string:
