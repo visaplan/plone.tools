@@ -21,6 +21,7 @@ from visaplan.plone.tools.setup._args import (
     _extract_move_args,
     extract_layout_switch,
     extract_menu_switch,
+    normalize_menu_switch,
     )
 from visaplan.plone.tools.setup._misc import _traversable_path
 from visaplan.plone.tools.setup._o_tools import (
@@ -39,10 +40,7 @@ from visaplan.plone.tools.setup._reindex import make_reindexer
 
 # Logging / Debugging:
 import logging
-
-# Exceptions:
-
-
+from pdb import set_trace
 
 
 __all__ = [
@@ -108,29 +106,68 @@ def make_object_getter(context, **kwargs):
         logger = pop('logger')
     elif verbose:
         logger = logging.getLogger('get_object')
-    reindexer = kwargs.pop('reindexer', None)
-    idxs = kwargs.pop('idxs', None)
-    if reindexer is None and (set_menu is None or set_menu):
-        reindexer = make_reindexer(logger=logger,
-                                   context=parent,
-                                   idxs=idxs)
-    elif reindexer is not None and idxs is not None:
-        logger.warn('Ignoring idxs value %(idxs)r', locals())
-    reindex = kwargs.pop('reindex', reindexer is not None
-                                    or None)
-    if reindex and reindexer is None:
-        reindexer = make_reindexer(logger=logger,
-                                   context=parent)
-    set_title =    pop('set_title', True)
-    set_uid =      pop('set_uid', False)
-    get_uid     =  pop('get_uid', None)
+
+    set_menu =  normalize_menu_switch(kwargs)
+    reindexer = pop('reindexer', None)
+    idxs =      pop('idxs', None)
+    if idxs is None:
+        idxs = []
+    elif not idxs:  # e.g. False
+        idxs = None
+    set_trace()
+    mrx_kw = {  # make_reindexer keyword args
+        'logger': logger,
+        'context': context if parent is None
+                   else parent,
+        'idxs': idxs,
+        }
+    if idxs is None:  # defaults suppression;
+        idxs = []     # won't be used! (see ignored_idxs below)
+    reindex      = pop('reindex', reindexer is not None
+                                  or None)
+    set_title    = pop('set_title', True)
+    set_uid      = pop('set_uid', False)
+    get_uid      = pop('get_uid', None)
     set_language = pop('set_language', True)
     set_canonical = pop('set_canonical', None)
     if set_canonical is None:
         set_canonical = set_language
     set_subportal = pop('set_subportal', None)
     subportal     = pop('subportal', None)
-    return_tuple = pop('return_tuple', False)
+    return_tuple  = pop('return_tuple', False)
+
+    if set_menu is not None:
+        idxs.append('getExcludeFromNav')
+    if set_title:
+        idxs.extend([
+            'Title',
+            'getTitleIndex',
+            ])
+    if set_uid:
+        idxs.extend([
+            'UID',
+            ])
+    if set_uid:
+        idxs.extend([
+            'Language',
+            ])
+    if set_subportal:
+        idxs.extend([
+            'get_sub_portal',
+            ])
+    if reindex is None:
+        reindex = (reindexer is not None
+                   or bool(idxs)
+                   )
+    ignored_idxs = idxs is not mrx_kw['idxs']
+    if (reindex
+        and ignored_idxs
+         or (idxs and reindexer is not None)
+        ):
+        logger.warn('Ignoring idxs value %(idxs)r', locals())
+
+    if reindex and reindexer is None:
+        reindexer = make_reindexer(**mrx_kw)
 
     def _err(msg, notes, logger=logger):
         notes.append(('ERROR', msg))
@@ -241,7 +278,12 @@ def make_object_getter(context, **kwargs):
             if get_uid or uid is not None:
                 found_uid = IUUID(o, None)
                 if uid is not None:
-                    if found_uid != uid:
+                    if found_uid == 'root':
+                        if set_uid:
+                            _err("Won't set UID of %(o)r to %(uid)r!"
+                                 % locals(),
+                                 notes)
+                    elif found_uid != uid:
                         if set_uid:
                             o._setUID(uid)
                             _info('%(o)r: old UID %(found_uid)r --> new UID %(uid)r'
@@ -258,7 +300,7 @@ def make_object_getter(context, **kwargs):
                         _info('%(o)r: checked UID (%(found_uid)r)' % locals(),
                               notes,
                               verbose > 1)
-            if get_uid:
+            if get_uid and found_uid != 'root':
                 updates['uid'] = found_uid
 
         # ---------- [set_]title:
@@ -314,7 +356,7 @@ def make_object_getter(context, **kwargs):
         if reindexer is None:
             o.reindexObject()
         else:
-            reindexer(o)
+            reindexer(o=o)
         info['reindexed'] = True
         return ((o, info) if return_tuple
                 else o)

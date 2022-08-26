@@ -306,6 +306,7 @@ def _clone_tree_inner(context,  # --------------- [ _clone_tree_inner ... [
         pp(src_dict=src_dict, recursion_level=recursion_level, parents_o=parents_o)
         if src_lang in parents_o:
             src_dict['parent'] = parents_o[src_lang]
+        pp(reindex=reindex, src_dict=src_dict)
         src_o, info = get_object(reindex=reindex,
                                  **src_dict)
         if src_o is None:
@@ -315,7 +316,8 @@ def _clone_tree_inner(context,  # --------------- [ _clone_tree_inner ... [
         else:
             siblings_o[src_lang] = src_o
         src_dict.update(info['updates'])
-        assert src_dict['uid']
+        # if processing the site root, we'll not have a UID:
+        # assert src_dict['uid']
 
         # q&d; we might want a smarter comparison method which tells
         # whether 2 dicts specify the same object (e.g. by uid, if present):

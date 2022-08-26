@@ -171,7 +171,7 @@ def handle_title(o, kwdict, created, do_pop=True):
     return changed, notes
 
 
-def handle_language(o, kwdict, created, do_pop=True):
+def handle_language(o, kwdict, created, do_pop=True):  # ----- [ h.l. ... [
     """
     Handle the language and canonical keyword arguments for the given object
     `o`.
@@ -187,6 +187,13 @@ def handle_language(o, kwdict, created, do_pop=True):
     changed = False
     notes = []
     _DBG, _NFO, _ERR = make_miniloggers(notes)
+    pt = getattr(o, 'portal_type', None)
+    if pt == 'Plone Site':
+        _NFO("%(o)r: Won't handle_language for site root!" % locals())
+        return changed, notes
+    elif 0:
+        pp(o, kwdict, pt)
+        set_trace()
 
     pop = (kwdict.pop if do_pop
            else kwdict.get)
@@ -318,17 +325,25 @@ def handle_language(o, kwdict, created, do_pop=True):
                     changed = True
     # ----------------------- ] ... canonical, with language implied ]
 
-    if changed:  # if canonical was given, we'll have set the language
+    if changed or not set_language:
         return changed, notes
 
     if set_language:
-        _NFO('Setting language to %(language)r', locals())
-        o.setLanguage(language)
-        changed = True
-    return changed, notes
+        _NFO('%(o)r: Setting language to %(language)r', locals())
+        try:
+            o.setLanguage(language)
+        except AttributeError as e:
+            _ERR('handle_language(%(o)r): %(e)r', locals())
+            pp(locals(), 'Nochmal, mit Debugger:',
+            'Fehler tritt auf in LinguaPlone (.getTranslation --> isCanonical)')
+            set_trace()
+            o.setLanguage(language)
+        else:
+            changed = True
+    return changed, notes  # ---------------------- ] ... handle_language ]
 
 
-def handle_layout(o, kwdict, created, do_pop=True):
+def handle_layout(o, kwdict, created, do_pop=True):  # --- [ h.layout ... [
     """
     handle the layout matters; return a 3-tuple (changed, notes, updates)
     """
@@ -358,10 +373,10 @@ def handle_layout(o, kwdict, created, do_pop=True):
         if found_layout:
             _NFO('Found layout to be %(found_layout)r', locals())
             updates['layout'] = found_layout
-    return (changed, notes, updates)
+    return (changed, notes, updates)  # ----------- ] ... handle_language ]
 
 
-def handle_menu(o, kwdict, created, do_pop=True):
+def handle_menu(o, kwdict, created, do_pop=True):  # -- [ handle_menu ... [
     """
     Handle the language and canonical keyword arguments for the given object
     `o`.
@@ -381,13 +396,25 @@ def handle_menu(o, kwdict, created, do_pop=True):
     switch_menu = extract_menu_switch(kwdict, created, do_pop=do_pop)
     if switch_menu is not None:
         val = not switch_menu
-        o.setExcludeFromNav(val)
-        _NFO('%(o)r: setExcludeFromNav(%(val)r)', locals())
-        changed = True
+        try:
+            set_to = o.setExcludeFromNav
+        except AttributeError:
+            pt = getattr(o, 'portal_type', None)
+            if pt == 'Plone Site':
+                # this is expected:
+                _NFO('%(o)r (%(pt)r) has no setExcludeFromNav attribute'
+                     % locals())
+            else:
+                _ERR('%(o)r (%(pt)r) has no setExcludeFromNav attribute!'
+                     % locals())
+        else:
+            set_to(val)
+            _NFO('%(o)r: setExcludeFromNav(%(val)r)', locals())
+            changed = True
     else:
         _DBG('switch_menu is %(switch_menu)r', locals())
 
-    return changed, notes
+    return changed, notes  # -------------------------- ] ... handle_menu ]
 
 
 # --------------------------------- [ depends on visaplan.plone.subportals ... [

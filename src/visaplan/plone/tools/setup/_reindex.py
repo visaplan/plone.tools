@@ -6,6 +6,8 @@ Tools für Produkt-Setup (Migrationsschritte, "upgrade steps"): _tree
 # Python compatibility:
 from __future__ import absolute_import
 
+from traceback import extract_stack
+
 # Zope:
 import transaction
 from Products.CMFCore.utils import getToolByName
@@ -92,6 +94,12 @@ def make_reindexer(**kwargs):
                 raise ValueError('neither brain nor o(bject) given!')
             try:
                 o = brain.getObject()
+            except AttributeError as e:
+                pp(('e:', e), ('brain:', brain), ('o:', o),
+                   ('test:', repr(brain).startswith('<PloneSite ')))
+                logger.error('KeyError %(e)r for brain (?!) %(brain)r', locals())
+                set_trace()
+                pp(extract_stack())
             except KeyError as e:
                 logger.error('KeyError %(e)r for brain %(brain)r', locals())
             except Exception as e:
@@ -112,6 +120,11 @@ def make_reindexer(**kwargs):
         if debug:
             pp('*** Object %(o)r found!' % locals())
             set_trace()
+
+        pt = getattr(o, 'portal_type', None)
+        if pt == 'Plone Site':
+            logger.warn("%(o)r: Won't reindex the site root", locals())
+            return False
 
         try:
             catalog_reindex(o, **ri_kwargs)

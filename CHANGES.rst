@@ -3,8 +3,8 @@ Changelog
 
 
 
-2.0.0 (unreleased)
-------------------
+2.0.0 (estimated)
+-----------------
 
 - Breaking changes:
 
@@ -13,6 +13,29 @@ Changelog
     - all options (which are all arguments except the request)
       will `need to` be given by name
       (which is possible and `recommended already`).
+
+
+1.4.0 (2021-03-26)
+------------------
+
+Breaking changes:
+
+- `.setup.switch_menu_item` ...
+
+  - won't change anything if the `on` argument is `None`
+  - won't accept (other) non-boolean arguments for `on`,
+    unless `strict=False` is specified (new keyword-only argument)
+
+Improvements:
+
+- Working doctests for ``search`` module
+- `zcmlgen` constructors support `skip` option
+
+Requirements:
+
+- visaplan.tools v1.3.1+
+
+[tobiasherp]
 
 
 1.3.0 (2020-12-16)

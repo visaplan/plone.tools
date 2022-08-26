@@ -10,19 +10,12 @@ from six import string_types as six_string_types
 from six import text_type as six_text_type
 from six.moves.urllib.parse import urlencode, urlsplit, urlunsplit
 
-# Setup tools:
-import pkg_resources
+from visaplan.plone.tools._have import HAS_INFOHUBS, HAS_BEAUTIFULSOUP
 
-try:
-    pkg_resources.get_distribution('visaplan.plone.infohubs')
-except pkg_resources.DistributionNotFound:
-    context_and_form_tuple = None
-    HAS_INFOHUBS = False
-else:
-    # visaplan:
+if HAS_INFOHUBS:
     from visaplan.plone.infohubs.hubs2 import context_and_form_tuple
-    HAS_INFOHUBS = True
-
+else:
+    context_and_form_tuple = None
 
 # Standard library:
 from cgi import parse_qsl
@@ -33,12 +26,7 @@ from time import strptime
 
 __author__ = "Tobias Herp <tobias.herp@visaplan.com>"
 
-try:
-    pkg_resources.get_distribution('beautifulsoup4')
-except pkg_resources.DistributionNotFound:
-    HAS_BEAUTIFULSOUP = False
-else:
-    HAS_BEAUTIFULSOUP = True
+if HAS_BEAUTIFULSOUP:
     # 3rd party:
     from bs4 import BeautifulSoup
 

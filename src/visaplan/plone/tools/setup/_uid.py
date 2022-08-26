@@ -9,23 +9,16 @@ from __future__ import absolute_import
 from six import string_types as six_string_types
 from six import text_type as six_text_type
 
-# Setup tools:
-import pkg_resources
-
 # Zope:
 from Products.CMFCore.utils import getToolByName
 
-try:
-    pkg_resources.get_distribution('visaplan.kitchen')
-except pkg_resources.DistributionNotFound:
-    HAS_KITCHEN = False
-    generate_uids = None
-else:
-    HAS_KITCHEN = True
+from visaplan.plone.tools._have import HAS_KITCHEN
+if HAS_KITCHEN:
     # visaplan:
     from visaplan.kitchen.spoons import generate_uids
+else:
+    generate_uids = None
 
-# Logging / Debugging:
 # Logging / Debugging:
 from pdb import set_trace
 from visaplan.tools.debug import pp

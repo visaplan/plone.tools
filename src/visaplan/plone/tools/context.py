@@ -11,9 +11,6 @@ from __future__ import absolute_import, print_function
 
 from six import string_types as six_string_types
 
-# Setup tools:
-import pkg_resources
-
 # Standard library:
 from traceback import extract_stack
 
@@ -27,17 +24,14 @@ from Products.CMFPlone import PloneMessageFactory as pmf
 from visaplan.tools.coding import safe_decode
 from visaplan.tools.minifuncs import check_kwargs, gimme_False
 
+from visaplan.plone.tools._have import HAS_ZOPE_I18N
+
 # Logging / Debugging:
 import logging
 from visaplan.plone.tools.log import getLogSupport
 from visaplan.tools.debug import asciibox, log_or_trace
 
-try:
-    pkg_resources.get_distribution('zope.i18n')
-except pkg_resources.DistributionNotFound:
-    HAS_ZOPE_I18N = False
-else:
-    HAS_ZOPE_I18N = True
+if HAS_ZOPE_I18N:
     # Zope:
     from zope.i18n import translate as z3translate
 
@@ -490,7 +484,7 @@ def getPath(context, sep='/'):
     """
     Return the complete path from the Zope root.
 
-    Without the sep option given, this is the same as the getPath mothod
+    Without the sep option given, this is the same as the getPath method
     of Products.ZCatalog.CatalogPathAwareness.CatalogAware.
     """
     return sep.join(context.getPhysicalPath())

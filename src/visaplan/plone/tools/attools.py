@@ -11,26 +11,20 @@ from __future__ import absolute_import, print_function
 
 from six import string_types as six_string_types
 
-# Setup tools:
-import pkg_resources
-
 __author__ = "Tobias Herp <tobias.herp@visaplan.com>"
 
 # Standard library:
 from collections import defaultdict
 
-try:
-    pkg_resources.get_distribution('Products.Archetypes')
-except pkg_resources.DistributionNotFound:
-    HAS_ARCHETYPES = False
-else:
-    HAS_ARCHETYPES = True
+# Local imports:
+from visaplan.plone.tools._have import HAS_ARCHETYPES
+
+if HAS_ARCHETYPES:
     # Zope:
     from Products.Archetypes.event import ObjectEditedEvent
     from Products.Archetypes.utils import mapply, shasattr
     from zope import event
 
-# visaplan:
 # visaplan:
 from visaplan.tools.lands0 import makeSet
 

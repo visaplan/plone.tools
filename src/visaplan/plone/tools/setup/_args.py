@@ -6,8 +6,17 @@ Helpers for arguments exploitation
 # Python compatibility:
 from __future__ import absolute_import
 
-# visaplan:
-from visaplan.tools.minifuncs import check_kwargs
+try:
+    # visaplan:
+    from visaplan.tools.minifuncs import check_kwargs
+except ImportError as e:
+    if __name__ == '__main__':
+        def dummy(*args, **kwargs):
+            pass
+        check_kwargs = dummy
+        print('W: %(e)r Some tests might fail' % locals())
+    else:
+        raise
 
 __all__ = [
         # Helferlein für **kwargs:
@@ -145,6 +154,9 @@ def extract_menu_switch(dic, created, default=None, do_pop=True):
     from the given dict; if both are present but different,
     a ValueError is raised.
 
+    Other than normalize_menu_switch (below), this function takes other
+    keys into account as well, e.g. "created".
+
     We'll use a little test helper which enforces the `created` argument to be
     given by name, for enhanced clarity:
     >>> def ems(dic, **kwargs):
@@ -156,7 +168,7 @@ def extract_menu_switch(dic, created, default=None, do_pop=True):
     >>> ems(dic, created=None, do_pop=False)
     1
 
-    With do_op=False, the dictionary is not changed:
+    With do_pop=False, the dictionary is not changed:
     >>> sorted(dic.items())
     [('menu', 1), ('other', 42), ('switch_menu', 1)]
 
@@ -231,6 +243,32 @@ def extract_menu_switch(dic, created, default=None, do_pop=True):
 
 def normalize_menu_switch(dic):
     """
+    Return the value of the first menu-switching option,
+    check for conflicts, and remove superfluous (but not conflicting)
+    keys.
+
+    >>> dic1={'switch_menu': 1, 'menu': 1, 'other': 42}
+    >>> normalize_menu_switch(dic1)
+    1
+    >>> sorted(dic1.items())
+    [('other', 42), ('switch_menu', 1)]
+
+    The keys are not added if missing:
+    >>> dic2={'other': 43}
+    >>> normalize_menu_switch(dic2)
+    >>> sorted(dic2.items())
+    [('other', 43)]
+
+    Conflicting specifications cause an error:
+    >>> dic3={'switch_menu': 1, 'menu': 0}
+    >>> normalize_menu_switch(dic3)
+    Traceback (most recent call last):                   
+      ...
+    ValueError: 'menu': 0 conflicts 'switch_menu' value 1!
+
+    The function is sometimes used just to normalize the given dict,
+    ignoring the return value:
+
     >>> dic1={'switch_menu': 1, 'menu': 1, 'other': 42}
     >>> def f(dic):
     ...     normalize_menu_switch(dic)
@@ -270,6 +308,7 @@ def normalize_menu_switch(dic):
             keys.append(key)
     if res is not None and firstval is None:
         dic[allowed[0]] = res
+    return res
 
 
 def extract_layout_switch(dic, default=None, do_pop=True):
