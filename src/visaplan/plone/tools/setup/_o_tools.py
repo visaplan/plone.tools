@@ -9,7 +9,6 @@ All tools in this module are called in the same style.
 # Python compatibility:
 from __future__ import absolute_import
 
-# Python compatibility:
 from six import string_types as six_string_types
 from six.moves import map
 

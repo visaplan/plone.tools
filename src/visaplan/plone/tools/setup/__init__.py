@@ -50,12 +50,10 @@ __all__ = [
         'make_watcher_function',  # --> Signatur f(brain, string)
         ## _workflow:
         'make_transition_applicator',
+        'load_and_cook',  # {css,js}registry.xml
         ## created by factory:
         'safe_context_id',
         ]
-# visaplan:
-from visaplan.tools.lands0 import make_default_prefixer
-
 # Local imports:
 from visaplan.plone.tools.setup._args import (
     extract_brain_or_object,
@@ -65,6 +63,7 @@ from visaplan.plone.tools.setup._args import (
 from visaplan.plone.tools.setup._attr import make_attribute_setter
 from visaplan.plone.tools.setup._decorator import StepAborted, step
 from visaplan.plone.tools.setup._get_object import make_object_getter
+from visaplan.plone.tools.setup._gs import load_and_cook, safe_context_id
 from visaplan.plone.tools.setup._make_folder import make_subfolder_creator
 from visaplan.plone.tools.setup._query import (
     getAllLanguages,
@@ -92,6 +91,3 @@ from visaplan.plone.tools.setup._uid import (
 from visaplan.plone.tools.setup._watch import make_watcher_function
 from visaplan.plone.tools.setup._workflow import \
     make_transition_applicator  # TODO: transitions_map argument!
-
-safe_context_id = make_default_prefixer('profile-',
-                                        ['snapshot-'])

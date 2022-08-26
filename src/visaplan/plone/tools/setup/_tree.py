@@ -18,9 +18,6 @@ from time import time
 # Zope:
 import transaction
 from Products.CMFCore.utils import getToolByName
-from Products.CMFCore.WorkflowCore import WorkflowException
-# Exceptions:
-from ZODB.POSException import POSKeyError
 
 # Plone:
 from plone.uuid.interfaces import IUUID

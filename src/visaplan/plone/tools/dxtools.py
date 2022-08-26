@@ -10,4 +10,4 @@ __author__ = "Tobias Herp <tobias.herp@visaplan.com>"
 
 # Local imports:
 from ._dx4 import get_first_text_as_html
-from ._dx5 import get_all_texts, generate_all_texts
+from ._dx5 import generate_all_texts, get_all_texts

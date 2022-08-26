@@ -14,6 +14,16 @@ Changelog
       (which is possible and `recommended already`).
 
 
+1.4.8 (2021-11-29)
+------------------
+
+New features: 
+
+- New ``.setup`` function `load_and_cook`, for use in GenericSetup upgrade steps
+
+[tobiasherp]
+
+
 1.4.7 (2021-11-17)
 ------------------
 

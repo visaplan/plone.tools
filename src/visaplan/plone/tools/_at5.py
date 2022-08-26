@@ -9,12 +9,14 @@ from __future__ import absolute_import
 from six import string_types as six_string_types
 from six import text_type as six_text_type
 
+# 3rd party:
 from bs4 import BeautifulSoup
 
 # visaplan:
-from visaplan.tools.html import from_plain_text
 from visaplan.tools.coding import safe_decode
+from visaplan.tools.html import from_plain_text
 
+# Local imports:
 from ._at3 import getter_name
 
 

@@ -28,4 +28,4 @@ from ._at3 import (
     setter_tuple,
     )
 from ._at4 import get_first_text_as_html
-from ._at5 import get_all_texts, generate_all_texts
+from ._at5 import generate_all_texts, get_all_texts

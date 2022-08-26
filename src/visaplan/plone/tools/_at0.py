@@ -3,6 +3,7 @@
 visaplan.plone.tools._at0 -- imported via .attools
 """
 
+# Python compatibility:
 from __future__ import absolute_import
 
 # Local imports:

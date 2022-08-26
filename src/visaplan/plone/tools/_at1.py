@@ -10,8 +10,10 @@ you can use the following vim script:
 This will give you two import lines before each converted code line; you'll need to move those up (and delete duplicates).
 """
 
-# Local imports:
+# Python compatibility:
 from __future__ import absolute_import
+
+# Local imports:
 from visaplan.plone.tools._have import HAS_ARCHETYPES
 
 if HAS_ARCHETYPES:
