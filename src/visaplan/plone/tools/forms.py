@@ -60,13 +60,13 @@ except ImportError:
         raise
     UIDCHARS_UNICODE = frozenset(u'0123456789abcdef')
     def is_uid_shaped(s, onerror='raise'):
-        if isinstance(s, str):
+        if isinstance(s, six_text_type):
+            pass
+        elif isinstance(s, bytes):
             try:
                 s = s.decode('ascii')
             except UnicodeDecodeError:
                 return False
-        elif isinstance(s, six_text_type):
-            pass
         elif onerror == 'raise':
             raise ValueError('String expected: %(s)r'
                              % locals())
@@ -709,6 +709,10 @@ def uid_or_number(val, **kwargs):
     Wenn eine Zahl übergeben wurde, gibt es keine solche Beschränkung:
     >>> uid_or_number(10001)['number']
     10001
+
+    We might use this as well to prefix our lesson ids in course xml:
+    >>> sorted(uid_or_number('lesson-5').items())
+    [('number', 5), ('prefix', 'lesson-'), ('uid', None)]
     """
     res = {'uid':    None,
            'number': None,

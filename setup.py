@@ -27,7 +27,7 @@ def valid_suffix(suffix):
     suffix = suffix.strip()
     if not suffix:
         return suffix
-    allowed = set('dev.0123456789rcpost')
+    allowed = set('edv.0123456789rcpost')
     disallowed = set(suffix).difference(allowed)
     if disallowed:
         disallowed = ''.join(sorted(disallowed))
@@ -58,6 +58,7 @@ def valid_suffix(suffix):
         if char not in '0123456789':
             raise ValueError('Chunk %(chunk)r of version suffix %(suffix)r'
                              ' doesn\'t end with a digit'
+                             ' (normalization would append a "0")'
                              % locals())
     return suffix  # ... valid_suffix
     # ... get the version ...
@@ -115,12 +116,17 @@ def github_urls(package, **kwargs):
         package = '.'.join(pkg_list)
     else:
         pick_user = pop('pick_user', 'user' not in kwargs)
+        given_user = pop('user', None)
         if pick_user:
             user = pkg_list[0]
-            if 'user' in kwargs:
-                assert pop('user') == user
+            if given_user is not None and given_user != user:
+                raise ValueError('given user %(given_user)r mismatches '
+                                 'user picked from package %(user)r!'
+                                 % locals())
+        elif given_user is not None:
+            user = given_user
         else:
-            user = pop('user')
+            raise ValueError('no user given nor picked!')
     if pop('travis', False):  # reqires github to be trueish
         res.update({  # CHECKME: is there a de-facto standard key for this?
             'Tests': 'https://travis-ci.org/%(user)s/%(package)s' % locals()

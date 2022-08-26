@@ -70,7 +70,7 @@ def getLogSupport(name=None,
     logger = logging.getLogger(label)
     if default is None:
         default = defaultFromDevMode and _DEVMODE_STRING or 'False'
-    elif not isinstance(default, str):
+    elif not isinstance(default, six_string_types):
         raise ValueError('default must be a string! (%(default)r)'
                          % locals())
     tmp = get_debug_active(name,

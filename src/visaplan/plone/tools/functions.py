@@ -37,15 +37,57 @@ def is_uid_shaped(s, onerror='raise'):
     False
 
     Verwendet z. B. zum Erzeugen des 'uid'-Werts von
-    visaplan.plone.tools.forms.uid_or_number
+    visaplan.plone.tools.forms.uid_or_number.
+
+    ACHTUNG:
+    Diese Funktion reagiert qua Vorgabe ungnädig auf unzulässige Werte:
+    >>> is_uid_shaped(None)
+    Traceback (most recent call last):
+      ...
+    ValueError: String expected: None
+    >>> is_uid_shaped(42, onerror="raise")
+    Traceback (most recent call last):
+      ...
+    ValueError: String expected: 42
+    
+    Durch Angabe eines anderen Werts als "raise" für die `onerror`-Option
+    läßt sich dies beheben; *welcher* Wert dabei verwendet wird, wird aktuell
+    noch ignoriert:
+    >>> is_uid_shaped(None, '')
+    False
+    >>> is_uid_shaped(None, False)
+    False
+
+    Die Angabe "falschiger" Werte wird in diesem Fall dringend empfohlen;
+    diese könnten zukünftig auch als Rückgabewert für diesen Fall verwendet
+    werden.
+    Wie "wahre" Strings außer 'raise' und sonstige "wahre" Werte
+    zukünftig verstanden werden, ist undefiniert!
+
+    Finally, a few basic assumptions of the function:
+    >>> isinstance(b'123', bytes)
+    True
+    >>> isinstance(b'123', six_text_type)
+    False
+    >>> isinstance(u'123', six_text_type)
+    True
+    >>> isinstance(u'123', bytes)
+    False
+
+    The following test, however:
+    >>> isinstance('123', str)
+    True
+
+    doesn't tell about the existence of the .decode method consistently in
+    Python 2 and Python 3.
     """
-    if isinstance(s, str):
+    if isinstance(s, six_text_type):
+        pass
+    elif isinstance(s, bytes):
         try:
             s = s.decode('ascii')
         except UnicodeDecodeError:
             return False
-    elif isinstance(s, six_text_type):
-        pass
     elif onerror == 'raise':
         raise ValueError('String expected: %(s)r'
                          % locals())
@@ -82,6 +124,12 @@ def looksLikeAUID(uid):
 
     Sie wird hier daher vorwiegend aus historischen Gründen erhalten;
     die Umstellung auf is_uid_shaped (siehe oben) wird empfohlen.
+
+    Es gibt allerdings einen Unterschied in der Behandlung von Fehlern,
+    der dabei zu beachten ist:
+
+    >>> looksLikeAUID(None)
+    False
     """
     try:
         if len(uid) != 32:

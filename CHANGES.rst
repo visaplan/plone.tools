@@ -1,5 +1,18 @@
+.. vim: sw=2 sts=2 tw=79 cc=+1
+
 Changelog
 =========
+
+
+1.4.15 (unreleased)
+-------------------
+
+- Py3K support fixes for
+
+  - .functions.is_uid_shaped
+  - .log.getLogSupport
+
+[tobiasherp]
 
 
 1.4.14 (2022-04-22)
@@ -7,7 +20,10 @@ Changelog
 
 Bugfixes:
 
-- Missing imports fixed
+- Missing imports fixed for
+
+  - .groups.is_member_of__factory
+  - .setup.get_default_idxs
 
 [tobiasherp]
 
