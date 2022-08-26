@@ -122,6 +122,7 @@ def get_all_members(context, group_ids, **kwargs):  # --- [[
     if groups_only:
         format_args = {'pretty': False,
                        'forlist': True,
+                       'missing': 1,
                        }
         format_args.update(kwargs)
         ggibi = groupinfo_factory(context, **format_args)

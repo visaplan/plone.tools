@@ -19,10 +19,10 @@ def _parse_init_options(kwdict, args):
     >>> ar = ()
     >>> _parse_init_options(kw, ar)
     >>> sorted(kw.items())                     # doctest: +NORMALIZE_WHITESPACE
-    [('forlist',    0),
-     ('missing',    0),
-     ('pretty',     0),
-     ('searchtext', 0)]
+    [('forlist',      0),
+     ('missing',      0),
+     ('pretty',       0),
+     ('title_or_id',  0)]
 
     The values are just used as they are; we can use this to demonstrate the
     order of the traditional positional options:
@@ -30,12 +30,12 @@ def _parse_init_options(kwdict, args):
     >>> kw.clear()
     >>> _parse_init_options(kw, (1, 2, 3))
     >>> sorted(kw.items())                     # doctest: +NORMALIZE_WHITESPACE
-    [('forlist',    2),
-     ('missing',    0),
-     ('pretty',     1),
-     ('searchtext', 3)]
+    [('forlist',      2),
+     ('missing',      0),
+     ('pretty',       1),
+     ('title_or_id',  3)]
 
-    If missing=True, we'll need a missing_group_mask as well;
+    If missing=True, we'll need a missing_user_mask as well;
     we have a default value:
 
     >>> kw={'missing': 1}
@@ -43,9 +43,9 @@ def _parse_init_options(kwdict, args):
     >>> sorted(kw.items())                     # doctest: +NORMALIZE_WHITESPACE
     [('forlist',      0),
      ('missing',      1),
-     ('missing_group_mask', 'Unknown or deleted group "{id}"'),
+     ('missing_user_mask', 'Unknown or deleted user "{id}"'),
      ('pretty',       0),
-     ('searchtext',   0)]
+     ('title_or_id',  0)]
 
     Unknown keys yield TypeErrors, of course:
     >>> kw={'sillykey': 1}
@@ -59,7 +59,7 @@ def _parse_init_options(kwdict, args):
         'forlist',
         'missing',
         'pretty',
-        'searchtext'])
+        'title_or_id'])
     if unsupported:
         unsupported = sorted(unsupported)
         raise TypeError('Unsupported keyword option(s) %(unsupported)s!'
@@ -73,9 +73,9 @@ def _parse_init_options(kwdict, args):
     if 'forlist' not in kwdict:
         kwdict['forlist'] = (args.pop(0) if args
                              else 0)
-    if 'searchtext' not in kwdict:
-        kwdict['searchtext'] = (args.pop(0) if args
-                                else 0)
+    if 'title_or_id' not in kwdict:
+        kwdict['title_or_id'] = (args.pop(0) if args
+                                 else 0)
     if args:
         if args[1:]:
             raise TypeError('Unsupported positional options %r (...)'
@@ -84,14 +84,14 @@ def _parse_init_options(kwdict, args):
             raise TypeError('Unsupported positional option %(args)s'
                             % locals())
     # these are new:
-    missing_mask_default = 'Unknown or deleted group "{group_id}"'
-    missing_group_mask = kwdict.get('missing_group_mask')
+    missing_mask_default = 'Unknown or deleted user "{id}"'
+    missing_user_mask = kwdict.get('missing_user_mask')
     if 'missing' not in kwdict:
-        missing = kwdict['missing'] = int(bool(missing_group_mask))
+        missing = kwdict['missing'] = int(bool(missing_user_mask))
     else:
         missing = kwdict['missing']
-    if missing and not missing_group_mask:
-        kwdict['missing_group_mask'] = missing_mask_default
+    if missing and not missing_user_mask:
+        kwdict['missing_user_mask'] = missing_mask_default
 
 
 if __name__ == '__main__':

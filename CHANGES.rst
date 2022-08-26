@@ -2,6 +2,16 @@ Changelog
 =========
 
 
+1.4.11 (2022-02-05)
+-------------------
+
+Bugfixes:
+
+- Fixed a regression for .groups.groupinfo_factory
+
+[tobiasherp]
+
+
 1.4.10 (2022-02-03)
 -------------------
 

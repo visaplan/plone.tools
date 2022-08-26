@@ -4,8 +4,12 @@ from __future__ import absolute_import, print_function
 
 from six import text_type as six_text_type
 
+from collections import defaultdict
+
 # Zope:
 from Products.CMFCore.utils import getToolByName
+
+from visaplan.tools.minifuncs import gimme_None
 
 # Local imports:
 from ._data import PRETTY_MASK
@@ -45,6 +49,8 @@ def groupinfo_factory(context, *args, **kwargs):
     pretty -- Gruppennamen auflösen, wenn Suffix an ID und Titel
     forlist -- Minimale Rückgabe (nur ID und Titel),
                aber mit pretty kombinierbar
+    missing -- return a dict for missing groups as well,
+               and add an `exists` key
 
     searchtext -- Erzeuge eine Funktion, um einen Suchtext zu erzeugen;
                   diese nimmt keinee Gruppen-ID entgegen (wie die andernfalls
@@ -54,26 +60,40 @@ def groupinfo_factory(context, *args, **kwargs):
     _parse_init_options(kwargs, args)
     pretty = kwargs['pretty']
     forlist = kwargs['forlist']
+    missing = kwargs['missing']
+    missing_mask = kwargs.get('missing_group_mask') or None
     searchtext = kwargs['searchtext']
+
+    acl = getToolByName(context, 'acl_users')
     pg = getToolByName(context, 'portal_groups')
     get_group = pg.getGroupById
-    acl = getToolByName(context, 'acl_users')
     translate = make_translator(context)
     GROUPS = acl.source_groups._groups
+    if missing:
+        missing_mask = translate(missing_mask)
 
     def minimal_group_info(group_id):
         """
-        Nur ID und Titel
+        Return a dict with keys 'id', 'group_title', or empty.
         """
         group = get_group(group_id)
 
-        dict_ = {'id': group_id}
         try:
             thegroup = GROUPS[group_id]
-            dict_['group_title'] = safe_decode(thegroup['title'])
-            return dict_
         except KeyError:
+            if missing:
+                return defaultdict(gimme_None,
+                                   id=group_id,
+                                   exists=0)
             return {}
+        else:
+            dict_ = {
+                'id': group_id,
+                'group_title': safe_decode(thegroup['title']),
+                }
+            if missing:
+                dict_['exists'] = 1
+            return dict_
 
     def basic_group_info(group_id):
         """
@@ -88,12 +108,23 @@ def groupinfo_factory(context, *args, **kwargs):
 
         group = get_group(group_id)
 
-        dict_ = {'id': group_id}
         try:
             thegroup = GROUPS[group_id]
-            dict_['group_title'] = safe_decode(thegroup['title'])
         except KeyError:
+            if missing:
+                return defaultdict(gimme_None,
+                                   id=group_id,
+                                   exists=0)
             return {}
+        else:
+            dict_ = {
+                'id': group_id,
+                'group_title': safe_decode(thegroup['title']),
+                }
+            if missing:
+                dict_['exists'] = 1
+
+        # propietary keys:
         dict_['group_description'] = safe_decode(thegroup['description'])
         dict_['group_manager'] = thegroup.get('group_manager')
         dict_['group_desktop'] = thegroup.get('group_desktop')
@@ -113,21 +144,26 @@ def groupinfo_factory(context, *args, **kwargs):
         hinzu, der den Gruppentitel ohne das Rollensuffix enthält.
         """
         dic = basic_group_info(group_id)
-        try:
-            if 'role' not in dic:
-                dic['pretty_title'] = translate(dic['group_title'])
-                return dic
-            liz = dic['group_title'].split()
-            if liz and liz[-1] == dic['role']:
-                stem = u' '.join(liz[:-1])
-                mask = PRETTY_MASK[dic['role']]
-                dic['pretty_title'] = translate(mask).format(group=stem)
-            else:
-                dic['pretty_title'] = translate(dic['group_title'])
-        except KeyError as e:
-            # evtl. keine Gruppe! (Aufruf durch get_mapping_group)
-            print(e)
-            pass
+        if not dic:
+            assert not missing
+            return dic
+        elif not dic.get('exists', 1):
+            assert missing
+            if 'group_id' in missing_mask:
+                dic['group_id'] = group_id
+            dic['pretty_title'] = missing_mask.format(**dic)
+            return dic
+
+        if 'role' not in dic:
+            dic['pretty_title'] = translate(dic['group_title'])
+            return dic
+        liz = dic['group_title'].split()
+        if liz and liz[-1] == dic['role']:
+            stem = u' '.join(liz[:-1])
+            mask = PRETTY_MASK[dic['role']]
+            dic['pretty_title'] = translate(mask).format(group=stem)
+        else:
+            dic['pretty_title'] = translate(dic['group_title'])
         return dic
 
     def minimal2_group_info(group_id):
@@ -137,8 +173,13 @@ def groupinfo_factory(context, *args, **kwargs):
         Schlüssel 'pretty_title')
         """
         dic = minimal_group_info(group_id)
-        if not dic:     # Gruppe nicht (mehr) gefunden;
-            return dic  # {} zurückgeben
+        if not dic:
+            assert not missing
+            return dic
+        elif not dic.get('exists', 1):
+            assert missing
+            return dic
+
         dic2 = split_group_id(group_id)
         if dic2['role'] is not None:
             dic.update(dic2)
@@ -199,8 +240,3 @@ def groupinfo_factory(context, *args, **kwargs):
     else:
         return basic_group_info
 # -------------------------------- ] ... groupinfo_factory ]
-
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()

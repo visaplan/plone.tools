@@ -109,6 +109,7 @@ Scripts/
 include/
 lib64
 .profile
+.project
 
 # Spyder project settings
 .spyderproject
